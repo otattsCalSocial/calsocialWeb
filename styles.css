@@ -1,41 +1,273 @@
+/* Base Styles */
 body {
   background-color: #9b111e;
   color: #333;
   font-family: Arial, sans-serif;
   margin: 0;
-}
-
-.container {
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  text-align: center;
 }
 
+/* Navigation */
+.main-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 70px;
+  background-color: #9b111e;
+  z-index: 1000;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+}
+
+.nav-links {
+  display: flex;
+  gap: 20px;
+  justify-content: flex-end;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  width: 100%;
+}
+
+.nav-links a {
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 16px;
+  padding: 8px 16px;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+.nav-links a:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Container */
+.container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 90px 20px 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Home page specific */
+.container.home-container {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+}
+
+.app-icon {
+  width: 200px;
+  height: 200px;
+}
+
+.home-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Typography */
 h1 {
   font-size: 64px;
-  margin-bottom: 20px;
+  margin: 0;
   color: #ffffff;
 }
 
 p {
   font-size: 24px;
-  margin-bottom: 40px;
+  margin: 0 0 20px 0;
   color: #ffffff;
 }
 
+/* Download Section */
 .download-section {
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 
 .appstore-button {
   width: 150px;
-  margin-right: 30px;
 }
 
-.iphone-image {
-  width: 300px;
+/* Support and Privacy Pages */
+.support-container,
+.privacy-container {
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Support Form */
+.support-form {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 30px;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 600px;
+  margin: 20px auto;
+  box-sizing: border-box;
+}
+
+.form-group {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  color: #ffffff;
+  font-size: 16px;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.submit-button {
+  background-color: #ffffff;
+  color: #9b111e;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  width: 100%;
+}
+
+.submit-button:hover {
+  background-color: #f0f0f0;
+}
+
+/* Privacy Content */
+.privacy-content {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 30px;
+  border-radius: 8px;
+  text-align: left;
+  margin: 20px 0;
+  color: #ffffff;
+}
+
+.privacy-content section {
+  margin-bottom: 30px;
+}
+
+.privacy-content section:last-child {
+  margin-bottom: 0;
+}
+
+.privacy-content h2 {
+  color: #ffffff;
+  font-size: 24px;
+  margin-bottom: 15px;
+}
+
+.privacy-content p {
+  font-size: 16px;
+  line-height: 1.6;
+  margin-bottom: 15px;
+  text-align: left;
+}
+
+.privacy-content p:last-child {
+  margin-bottom: 0;
+}
+
+/* Back Link */
+.back-link {
+  margin-top: 20px;
+}
+
+.back-link a {
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 16px;
+}
+
+.back-link a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 48px;
+  }
+  
+  p {
+    font-size: 20px;
+  }
+  
+  .support-form,
+  .privacy-content {
+    padding: 20px;
+  }
+  
+  .appstore-button {
+    width: 120px;
+  }
+  
+  .app-icon {
+    width: 80px;
+    height: 80px;
+  }
+}
+
+@media (max-width: 480px) {
+  h1 {
+    font-size: 36px;
+  }
+  
+  p {
+    font-size: 18px;
+  }
+  
+  .nav-links {
+    gap: 10px;
+  }
+  
+  .nav-links a {
+    padding: 6px 12px;
+    font-size: 14px;
+  }
+  
+  .container {
+    padding: 80px 15px 15px;
+  }
+  
+  .app-icon {
+    width: 60px;
+    height: 60px;
+  }
 }

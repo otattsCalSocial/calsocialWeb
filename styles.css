@@ -219,28 +219,46 @@ p {
   text-decoration: underline;
 }
 
+.footer {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  padding: 20px;
+}
+
+.social-links {
+  display: flex;
+  align-items: center;
+}
+
+.instagram-icon {
+  width: 40px; /* Adjust as needed */
+  height: 40px; /* Match width for a square image */
+  max-width: 100%;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   h1 {
     font-size: 48px;
   }
-  
+
   p {
     font-size: 20px;
   }
-  
+
   .support-form,
   .privacy-content {
     padding: 20px;
   }
-  
+
   .appstore-button {
     width: 120px;
   }
-  
+
   .app-icon {
-    width: 80px;
-    height: 80px;
+    width: 120px;
+    height: 120px;
   }
 }
 
@@ -248,26 +266,26 @@ p {
   h1 {
     font-size: 36px;
   }
-  
+
   p {
     font-size: 18px;
   }
-  
+
   .nav-links {
     gap: 10px;
   }
-  
+
   .nav-links a {
     padding: 6px 12px;
     font-size: 14px;
   }
-  
+
   .container {
     padding: 80px 15px 15px;
   }
-  
+
   .app-icon {
-    width: 60px;
-    height: 60px;
+    width: 100px;
+    height: 100px;
   }
 }

@@ -56,14 +56,17 @@ body {
   box-sizing: border-box;
 }
 
-/* Home page specific */
 .container.home-container {
   justify-content: center;
   align-items: center;
   text-align: center;
   gap: 10px;
+  height: calc(100vh - 70px); /* Full viewport height minus the nav height */
+  padding: 0 20px;
+  box-sizing: border-box;
 }
 
+/* Home page specific */
 .app-icon {
   width: 200px;
   height: 200px;
@@ -219,21 +222,35 @@ p {
   text-decoration: underline;
 }
 
+/* Footer */
 .footer {
   position: fixed;
   bottom: 0;
+  left: 0;
   right: 0;
-  padding: 20px;
+  padding: 10px 20px;
+  background-color: #9b111e;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #ffffff;
+  font-size: 14px;
 }
 
-.social-links {
+.footer-content {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.copyright {
+  margin-right: 10px;
 }
 
 .instagram-icon {
-  width: 40px; /* Adjust as needed */
-  height: 40px; /* Match width for a square image */
+  width: 40px;
+  height: 40px;
   max-width: 100%;
 }
 
@@ -260,6 +277,13 @@ p {
     width: 120px;
     height: 120px;
   }
+
+  .container {
+    height: calc(100vh - 70px); /* Ensure vertical centering */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 }
 
 @media (max-width: 480px) {
@@ -281,7 +305,8 @@ p {
   }
 
   .container {
-    padding: 80px 15px 15px;
+    padding: 0 15px;
+    height: calc(100vh - 70px);
   }
 
   .app-icon {

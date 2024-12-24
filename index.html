@@ -34,7 +34,11 @@
       <div class="footer-content">
         <span class="copyright">© 2024 calsocial. All rights reserved.</span>
         <div class="social-links">
-          <a href="https://instagram.com/cal_social" class="instagram-link">
+          <a
+            href="https://instagram.com/cal_social"
+            class="instagram-link"
+            onclick="if (navigator.userAgent.match(/(iPhone|iPod|iPad|Android)/)) { window.location='instagram://user?username=cal_social'; return false; }"
+          >
             <img
               src="assets/Instagram_Glyph_White.png"
               alt="Instagram"

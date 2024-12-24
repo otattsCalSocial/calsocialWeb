@@ -255,6 +255,12 @@ p {
 }
 
 /* Responsive Design */
+@supports (-webkit-touch-callout: none) {
+  .main-nav {
+    padding-top: 15px; /* Safari-specific padding adjustment */
+  }
+}
+
 @media (max-width: 768px) {
   h1 {
     font-size: 48px;

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Event Details</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+    #event-container { display: none; }
+    #install-button { padding: 10px 20px; background-color: #007BFF; color: white; border: none; border-radius: 5px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Loading Event...</h1>
+  <div id="event-container">
+    <h2 id="event-title"></h2>
+    <p id="event-description"></p>
+  </div>
+  <button id="install-button" style="display: none;">Install the App</button>
+
+  <script>
+    (function() {
+      // Function to extract eventId from URL
+      function getEventId() {
+        const path = window.location.pathname;
+        const segments = path.split('/');
+        return segments[segments.length - 1] || 'defaultEventId';
+      }
+
+      // Function to fetch event data (replace with actual data source)
+      function fetchEventData(eventId) {
+        // Placeholder: Replace with real API call if available
+        const events = {
+          '12345': { title: 'Music Concert', description: 'Join us for an evening of live music!' },
+          '67890': { title: 'Art Exhibition', description: 'Explore the latest in modern art.' },
+          // Add more events as needed
+        };
+        return events[eventId] || { title: 'Event Not Found', description: 'Sorry, this event does not exist.' };
+      }
+
+      // Function to display event data
+      function displayEvent(eventData) {
+        document.querySelector('h1').style.display = 'none';
+        const container = document.getElementById('event-container');
+        document.getElementById('event-title').innerText = eventData.title;
+        document.getElementById('event-description').innerText = eventData.description;
+        container.style.display = 'block';
+      }
+
+      // Function to handle deep linking
+      function handleDeepLink(eventId) {
+        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+        const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
+        const isAndroid = /android/i.test(userAgent);
+
+        const appScheme = `calsocial://events/${eventId}`;
+        const iosAppURL = 'https://apps.apple.com/app/calsocial/id6738835548';
+        const androidAppURL = 'https://play.google.com/store/apps/details?id=com.cal.social';
+        const webFallbackURL = `https://cal.social`;
+
+        // Attempt to open the app
+        window.location = appScheme;
+
+        // Fallback after 2 seconds
+        setTimeout(() => {
+          if (isIOS) {
+            window.location = iosAppURL;
+          } else if (isAndroid) {
+            window.location = androidAppURL;
+          } else {
+            window.location = webFallbackURL;
+          }
+        }, 2000);
+      }
+
+      // Main Execution
+      const eventId = getEventId();
+      const eventData = fetchEventData(eventId);
+
+      if (eventData.title !== 'Event Not Found') {
+        // Display event details
+        displayEvent(eventData);
+        
+        // Attempt to open the app
+        handleDeepLink(eventId);
+      } else {
+        // Handle event not found
+        displayEvent(eventData);
+      }
+
+      // Show install button if app doesn't open
+      setTimeout(() => {
+        const installButton = document.getElementById('install-button');
+        installButton.style.display = 'block';
+        installButton.addEventListener('click', () => {
+          if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) {
+            window.location = iosAppURL;
+          } else if (/android/i.test(navigator.userAgent)) {
+            window.location = androidAppURL;
+          } else {
+            window.location = webFallbackURL;
+          }
+        });
+      }, 3000);
+    })();
+  </script>
+</body>
+</html>

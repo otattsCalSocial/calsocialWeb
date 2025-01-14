@@ -1,11 +1,16 @@
 {
-  "applinks": {
-    "apps": [],
-    "details": [
-      {
-        "appID": "D23N8ZNCJZ.social.cal.calsocial",
-        "paths": [ "/event/*" ]
-      }
-    ]
+    "applinks": {
+      "apps": [],
+      "details": [
+        {
+          "appID": "D23N8ZNCJZ.social.cal.calsocial",
+          "paths": [ "/event/*" ],
+          "components": [
+            {
+              "/": "/event/*"
+            }
+          ]
+        }
+      ]
+    }
   }
-}

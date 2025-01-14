@@ -53,41 +53,26 @@
         const userAgent = navigator.userAgent || navigator.vendor || window.opera;
         const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
         const isAndroid = /android/i.test(userAgent);
-
-        const appScheme = `calsocial://events/${eventId}`;
-        const iosAppURL = 'https://apps.apple.com/app/calsocial/id6738835548';
-        const androidAppURL = 'https://play.google.com/store/apps/details?id=com.cal.social';
-        const webFallbackURL = `https://cal.social`;
-
-        // Attempt to open the app
-        window.location = appScheme;
-
-        // Fallback after 2 seconds
-        setTimeout(() => {
-          if (isIOS) {
-            window.location = iosAppURL;
-          } else if (isAndroid) {
-            window.location = androidAppURL;
-          } else {
-            window.location = webFallbackURL;
-          }
-        }, 2000);
-      }
-
-      // Main Execution
-      const eventId = getEventId();
-      const eventData = fetchEventData(eventId);
-
-      if (eventData.title !== 'Event Not Found') {
-        // Display event details
-        displayEvent(eventData);
         
-        // Attempt to open the app
-        handleDeepLink(eventId);
-      } else {
-        // Handle event not found
-        displayEvent(eventData);
-      }
+        // Remove the custom URL scheme attempt for iOS
+        if (isIOS) {
+          // Let Universal Links handle it naturally
+          // If app isn't installed, it will go to App Store
+          const installButton = document.getElementById('install-button');
+          installButton.style.display = 'block';
+          installButton.addEventListener('click', () => {
+            window.location = 'https://apps.apple.com/app/calsocial/id6738835548';
+          });
+        } else if (isAndroid) {
+          // For Android, use Intent URL
+          const intentUrl = `intent://event/${eventId}#Intent;scheme=calsocial;package=com.cal.social;end`;
+          window.location = intentUrl;
+          
+          setTimeout(() => {
+            window.location = 'https://play.google.com/store/apps/details?id=com.cal.social';
+          }, 1000);
+        }
+}
 
       // Show install button if app doesn't open
       setTimeout(() => {

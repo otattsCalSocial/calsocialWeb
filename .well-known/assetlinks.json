@@ -1,0 +1,13 @@
+[
+    {
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "social.cal.calsocial",
+        "sha256_cert_fingerprints": [
+          "D7:48:28:BC:41:CD:3F:BF:D5:19:D1:03:05:EF:24:71:13:61:4B:47:FE:89:CD:8D:29:ED:83:E2:B1:FF:59:0C"
+        ]
+      }
+    }
+  ]
+  

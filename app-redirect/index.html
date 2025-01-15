@@ -10,26 +10,26 @@
       var appStoreURL = 'https://apps.apple.com/app/calsocial/id6738835548'; // Replace with your App Store URL
       var playStoreURL = 'https://play.google.com/store/apps/details?id=YOUR_PACKAGE_NAME'; // Replace with your Play Store URL
 
-      // Attempt to open the app after a short delay
-      setTimeout(function() {
-        // If the app is not installed, redirect to the App Store or Play Store
-        // For iOS, redirect to App Store
-        if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-          window.location.href = appStoreURL;
-        }
-        // For Android, redirect to Play Store
-        else if (/Android/i.test(navigator.userAgent)) {
-          window.location.href = playStoreURL;
-        }
-        // For other platforms, you can choose to redirect or show a message
-        else {
-          // Optional: Show a message or redirect to a website
-          window.location.href = 'https://cal.social';
-        }
-      }, 1500); // 1.5 seconds delay
+      // Create a hidden iframe for attempting to open the app
+      var iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      document.body.appendChild(iframe);
 
-      // Try to open the app
-      window.location.href = appScheme;
+      // Determine platform and set appropriate fallback
+      var fallbackURL = 'https://cal.social'; // Default fallback
+      if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        fallbackURL = appStoreURL;
+      } else if (/Android/i.test(navigator.userAgent)) {
+        fallbackURL = playStoreURL;
+      }
+
+      // Attempt to open the app using the iframe
+      iframe.src = appScheme;
+
+      // Redirect to the fallback URL after a delay if the app isn't opened
+      setTimeout(function() {
+        window.location.href = fallbackURL;
+      }, 1500); // 1.5 seconds delay
     });
   </script>
 </head>

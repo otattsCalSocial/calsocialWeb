@@ -1,53 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>calsocial</title>
-    <link rel="icon" type="image/png" href="assets/logoRed.png" />
-    <link rel="stylesheet" href="styles.css?v=3" />
-  </head>
-  <body>
-    <nav class="main-nav">
-      <div class="nav-links">
-        <a href="index.html">Home</a>
-        <a href="support.html">Support</a>
-        <a href="privacy.html">Privacy Policy</a>
-      </div>
-    </nav>
-    <div class="container home-container">
-      <img src="assets/icon.png" alt="Calsocial Icon" class="app-icon" />
-      <div class="home-content">
-        <h1>calsocial</h1>
-        <p>Invited? Go.</p>
-        <div class="download-section">
-          <a href="https://apps.apple.com/app/calsocial/id6738835548">
-            <img
-              src="assets/AppleDownload.svg"
-              alt="Download on the App Store"
-              class="appstore-button"
-            />
-          </a>
-        </div>
-      </div>
-    </div>
-    <footer class="footer">
-      <div class="footer-content">
-        <span class="copyright">© 2024 calsocial. All rights reserved.</span>
-        <div class="social-links">
-          <a
-            href="https://instagram.com/cal_social"
-            class="instagram-link"
-            onclick="if (navigator.userAgent.match(/(iPhone|iPod|iPad|Android)/)) { window.location='instagram://user?username=cal_social'; return false; }"
-          >
-            <img
-              src="assets/Instagram_Glyph_White.png"
-              alt="Instagram"
-              class="instagram-icon"
-            />
-          </a>
-        </div>
-      </div>
-    </footer>
-  </body>
+<head>
+  <meta charset="UTF-8">
+  <title>Redirecting to CalSocial</title>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var appStoreURL = 'https://apps.apple.com/app/calsocial/id6738835548'; // Your App Store URL
+      var playStoreURL = 'https://play.google.com/store/apps/details?id=com.yourcompany.calsocial'; // Your Play Store URL
+      var fallbackTimeout;
+
+      // Function to redirect to the App Store
+      function redirectToStore() {
+        var userAgent = navigator.userAgent || navigator.vendor || window.opera;
+        if (/iPhone|iPad|iPod/i.test(userAgent)) {
+          // Redirect to the App Store for iOS
+          window.location.href = appStoreURL;
+        } else if (/Android/i.test(userAgent)) {
+          // Redirect to the Play Store for Android
+          window.location.href = playStoreURL;
+        } else {
+          // Fallback to your website for other platforms
+          window.location.href = 'https://cal.social';
+        }
+      }
+
+      // Attempt to open the app using a custom URL scheme
+      try {
+        // Create an invisible iframe to open the app without causing an error
+        var iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = 'calsocial://'; // Replace with your custom URL scheme
+        document.body.appendChild(iframe);
+
+        // If the app isn't installed, redirect to the App Store after a short delay
+        fallbackTimeout = setTimeout(redirectToStore, 1500);
+      } catch (e) {
+        // If there’s any issue with the custom URL scheme, fallback immediately
+        redirectToStore();
+      }
+
+      // Clear the fallback timeout if the app successfully opens
+      window.addEventListener('pagehide', function () {
+        clearTimeout(fallbackTimeout);
+      });
+    });
+  </script>
+</head>
+<body>
+  <p>Redirecting to the app...</p>
+</body>
 </html>

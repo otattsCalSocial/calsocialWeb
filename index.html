@@ -5,12 +5,11 @@
   <title>Redirecting to CalSocial</title>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
-      var appStoreURL = 'https://apps.apple.com/app/calsocial/id6738835548';
-      var playStoreURL = 'https://play.google.com/store/apps/details?id=com.yourcompany.calsocial';
-      var fallbackTimeout;
-
+      const appStoreURL = 'https://apps.apple.com/app/calsocial/id6738835548';
+      const playStoreURL = 'https://play.google.com/store/apps/details?id=com.yourcompany.calsocial';
+  
       function redirectToStore() {
-        var userAgent = navigator.userAgent || navigator.vendor || window.opera;
+        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
         if (/iPhone|iPad|iPod/i.test(userAgent)) {
           window.location.replace(appStoreURL);
         } else if (/Android/i.test(userAgent)) {
@@ -19,34 +18,31 @@
           window.location.replace('https://cal.social');
         }
       }
-
-      // Get the event ID from the URL if present
+  
       const urlParams = new URLSearchParams(window.location.search);
       const eventId = urlParams.get('event') || '';
-      
-      // Construct the deep link
       const deepLink = `calsocial://event/${eventId}`;
-
-      // For iOS 9+
-      if (navigator.userAgent.match(/iPhone|iPad|iPod/i)) {
-        window.location.replace(deepLink);
-        fallbackTimeout = setTimeout(redirectToStore, 2000);
-      } 
-      // For Android
-      else if (navigator.userAgent.match(/Android/i)) {
+      let fallbackTimeout;
+  
+      if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = deepLink;
+        document.body.appendChild(iframe);
+  
+        fallbackTimeout = setTimeout(redirectToStore, 3000);
+      } else if (/Android/i.test(navigator.userAgent)) {
         window.location.href = deepLink;
-        fallbackTimeout = setTimeout(redirectToStore, 2000);
-      }
-      // For all other platforms
-      else {
+        fallbackTimeout = setTimeout(redirectToStore, 3000);
+      } else {
         redirectToStore();
       }
-
-      window.addEventListener('pagehide', function() {
+  
+      window.addEventListener('pagehide', function () {
         clearTimeout(fallbackTimeout);
       });
-
-      window.addEventListener('blur', function() {
+  
+      window.addEventListener('blur', function () {
         clearTimeout(fallbackTimeout);
       });
     });

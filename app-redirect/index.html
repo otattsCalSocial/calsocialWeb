@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Open Our App</title>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Define your app's custom URL scheme or Universal Link
+      var appScheme = 'calsocial://'; // Replace with your app's custom scheme
+      var appStoreURL = 'https://apps.apple.com/app/calsocial/id6738835548'; // Replace with your App Store URL
+      var playStoreURL = 'https://play.google.com/store/apps/details?id=YOUR_PACKAGE_NAME'; // Replace with your Play Store URL
+
+      // Attempt to open the app after a short delay
+      setTimeout(function() {
+        // If the app is not installed, redirect to the App Store or Play Store
+        // For iOS, redirect to App Store
+        if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+          window.location.href = appStoreURL;
+        }
+        // For Android, redirect to Play Store
+        else if (/Android/i.test(navigator.userAgent)) {
+          window.location.href = playStoreURL;
+        }
+        // For other platforms, you can choose to redirect or show a message
+        else {
+          // Optional: Show a message or redirect to a website
+          window.location.href = 'https://cal.social';
+        }
+      }, 1500); // 1.5 seconds delay
+
+      // Try to open the app
+      window.location.href = appScheme;
+    });
+  </script>
+</head>
+<body>
+  <p>Redirecting to the app...</p>
+</body>
+</html>

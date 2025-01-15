@@ -11,7 +11,10 @@
       function redirectToStore() {
         const userAgent = navigator.userAgent || navigator.vendor || window.opera;
         if (/iPhone|iPad|iPod/i.test(userAgent)) {
-          window.location.replace(appStoreURL);
+          displayErrorMessage();
+          setTimeout(() => {
+            window.location.replace(appStoreURL);
+          }, 3000);
         } else if (/Android/i.test(userAgent)) {
           window.location.replace(playStoreURL);
         } else {
@@ -24,13 +27,24 @@
       const deepLink = `calsocial://event/${eventId}`;
       let fallbackTimeout;
   
+      function displayErrorMessage() {
+        const errorMessage = document.createElement('p');
+        errorMessage.innerText = "It seems CalSocial is not installed. Redirecting to the App Store...";
+        errorMessage.style.color = "red";
+        errorMessage.style.fontWeight = "bold";
+        document.body.appendChild(errorMessage);
+      }
+  
       if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
         const iframe = document.createElement('iframe');
         iframe.style.display = 'none';
         iframe.src = deepLink;
         document.body.appendChild(iframe);
   
-        fallbackTimeout = setTimeout(redirectToStore, 3000);
+        fallbackTimeout = setTimeout(() => {
+          displayErrorMessage();
+          redirectToStore();
+        }, 3000);
       } else if (/Android/i.test(navigator.userAgent)) {
         window.location.href = deepLink;
         fallbackTimeout = setTimeout(redirectToStore, 3000);

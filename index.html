@@ -5,48 +5,54 @@
   <title>Redirecting to CalSocial</title>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
-      var appStoreURL = 'https://apps.apple.com/app/calsocial/id6738835548'; // Your App Store URL
-      var playStoreURL = 'https://play.google.com/store/apps/details?id=com.yourcompany.calsocial'; // Your Play Store URL
+      var appStoreURL = 'https://apps.apple.com/app/calsocial/id6738835548';
+      var playStoreURL = 'https://play.google.com/store/apps/details?id=com.yourcompany.calsocial';
       var fallbackTimeout;
 
-      // Function to redirect to the App Store
       function redirectToStore() {
         var userAgent = navigator.userAgent || navigator.vendor || window.opera;
         if (/iPhone|iPad|iPod/i.test(userAgent)) {
-          // Redirect to the App Store for iOS
-          window.location.href = appStoreURL;
+          window.location.replace(appStoreURL);
         } else if (/Android/i.test(userAgent)) {
-          // Redirect to the Play Store for Android
-          window.location.href = playStoreURL;
+          window.location.replace(playStoreURL);
         } else {
-          // Fallback to your website for other platforms
-          window.location.href = 'https://cal.social';
+          window.location.replace('https://cal.social');
         }
       }
 
-      // Attempt to open the app using a custom URL scheme
-      try {
-        // Create an invisible iframe to open the app without causing an error
-        var iframe = document.createElement('iframe');
-        iframe.style.display = 'none';
-        iframe.src = 'calsocial://'; // Replace with your custom URL scheme
-        document.body.appendChild(iframe);
+      // Get the event ID from the URL if present
+      const urlParams = new URLSearchParams(window.location.search);
+      const eventId = urlParams.get('event') || '';
+      
+      // Construct the deep link
+      const deepLink = `calsocial://event/${eventId}`;
 
-        // If the app isn't installed, redirect to the App Store after a short delay
-        fallbackTimeout = setTimeout(redirectToStore, 1500);
-      } catch (e) {
-        // If there’s any issue with the custom URL scheme, fallback immediately
+      // For iOS 9+
+      if (navigator.userAgent.match(/iPhone|iPad|iPod/i)) {
+        window.location.replace(deepLink);
+        fallbackTimeout = setTimeout(redirectToStore, 2000);
+      } 
+      // For Android
+      else if (navigator.userAgent.match(/Android/i)) {
+        window.location.href = deepLink;
+        fallbackTimeout = setTimeout(redirectToStore, 2000);
+      }
+      // For all other platforms
+      else {
         redirectToStore();
       }
 
-      // Clear the fallback timeout if the app successfully opens
-      window.addEventListener('pagehide', function () {
+      window.addEventListener('pagehide', function() {
+        clearTimeout(fallbackTimeout);
+      });
+
+      window.addEventListener('blur', function() {
         clearTimeout(fallbackTimeout);
       });
     });
   </script>
 </head>
 <body>
-  <p>Redirecting to the app...</p>
+  <p>Opening CalSocial...</p>
 </body>
 </html>

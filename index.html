@@ -1,67 +1,52 @@
-<!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Redirecting to CalSocial</title>
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      const appStoreURL = 'https://apps.apple.com/app/calsocial/id6738835548';
-      const playStoreURL = 'https://play.google.com/store/apps/details?id=com.yourcompany.calsocial';
-  
-      function redirectToStore() {
-        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-        if (/iPhone|iPad|iPod/i.test(userAgent)) {
-          setTimeout(() => {
-            window.location.replace(appStoreURL);
-          }, 3000);
-        } else if (/Android/i.test(userAgent)) {
-          window.location.replace(playStoreURL);
-        } else {
-          window.location.replace('https://cal.social');
-        }
-      }
-  
-      const urlParams = new URLSearchParams(window.location.search);
-      const eventId = urlParams.get('event') || '';
-      const deepLink = `calsocial://event/${eventId}`;
-      let fallbackTimeout;
-  
-      function displayErrorMessage() {
-        const errorMessage = document.createElement('p');
-        errorMessage.innerText = "It seems CalSocial is not installed. Redirecting to the App Store...";
-        errorMessage.style.color = "red";
-        errorMessage.style.fontWeight = "bold";
-        document.body.appendChild(errorMessage);
-      }
-  
-      if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-        const iframe = document.createElement('iframe');
-        iframe.style.display = 'none';
-        iframe.src = deepLink;
-        document.body.appendChild(iframe);
-  
-        fallbackTimeout = setTimeout(() => {
-          displayErrorMessage();
-          redirectToStore();
-        }, 3000);
-      } else if (/Android/i.test(navigator.userAgent)) {
-        window.location.href = deepLink;
-        fallbackTimeout = setTimeout(redirectToStore, 3000);
-      } else {
-        redirectToStore();
-      }
-  
-      window.addEventListener('pagehide', function () {
-        clearTimeout(fallbackTimeout);
-      });
-  
-      window.addEventListener('blur', function () {
-        clearTimeout(fallbackTimeout);
-      });
-    });
-  </script>
-</head>
-<body>
-  <p>Opening CalSocial...</p>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>calsocial</title>
+    <link rel="icon" type="image/png" href="assets/logoRed.png" />
+    <link rel="stylesheet" href="styles.css?v=3" />
+  </head>
+  <body>
+    <nav class="main-nav">
+      <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="support.html">Support</a>
+        <a href="privacy.html">Privacy Policy</a>
+      </div>
+    </nav>
+    <div class="container home-container">
+      <img src="assets/icon.png" alt="Calsocial Icon" class="app-icon" />
+      <div class="home-content">
+        <h1>calsocial</h1>
+        <p>Invited? Go.</p>
+        <div class="download-section">
+          <a href="https://apps.apple.com/app/calsocial/id6738835548">
+            <img
+              src="assets/AppleDownload.svg"
+              alt="Download on the App Store"
+              class="appstore-button"
+            />
+          </a>
+        </div>
+      </div>
+    </div>
+    <footer class="footer">
+      <div class="footer-content">
+        <span class="copyright">© 2024 calsocial. All rights reserved.</span>
+        <div class="social-links">
+          <a
+            href="https://instagram.com/cal_social"
+            class="instagram-link"
+            onclick="if (navigator.userAgent.match(/(iPhone|iPod|iPad|Android)/)) { window.location='instagram://user?username=cal_social'; return false; }"
+          >
+            <img
+              src="assets/Instagram_Glyph_White.png"
+              alt="Instagram"
+              class="instagram-icon"
+            />
+          </a>
+        </div>
+      </div>
+    </footer>
+  </body>
 </html>

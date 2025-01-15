@@ -1,9 +1,7 @@
 [[headers]]
-  for = "/.well-known/apple-app-site-association"
+  for = "/.well-known/*"
   [headers.values]
     Content-Type = "application/json"
 
-[[headers]]
-  for = "/.well-known/assetlinks.json"
-  [headers.values]
-    Content-Type = "application/json"
+[build]
+  publish = "/"

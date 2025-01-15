@@ -5,35 +5,25 @@
   <title>Open Our App</title>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // Define your app's custom URL scheme or Universal Link
-      var appScheme = 'calsocial://'; // Replace with your app's custom scheme
-      var appStoreURL = 'https://apps.apple.com/app/calsocial/id6738835548'; // Replace with your App Store URL
-      var playStoreURL = 'https://play.google.com/store/apps/details?id=YOUR_PACKAGE_NAME'; // Replace with your Play Store URL
+      const universalLink = window.location.href; // Use the current URL for Universal Link
+      const appStoreURL = 'https://apps.apple.com/app/calsocial/id6738835548';
+      const playStoreURL = 'https://play.google.com/store/apps/details?id=YOUR_PACKAGE_NAME';
 
-      // Create a hidden iframe for attempting to open the app
-      var iframe = document.createElement('iframe');
-      iframe.style.display = 'none';
-      document.body.appendChild(iframe);
-
-      // Determine platform and set appropriate fallback
-      var fallbackURL = 'https://cal.social'; // Default fallback
+      // Determine platform and set appropriate store URL
       if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-        fallbackURL = appStoreURL;
+        // On iOS, try universal link first, then fallback to App Store
+        setTimeout(function() {
+          window.location.href = appStoreURL;
+        }, 1000);
       } else if (/Android/i.test(navigator.userAgent)) {
-        fallbackURL = playStoreURL;
+        window.location.href = playStoreURL;
+      } else {
+        window.location.href = 'https://cal.social';
       }
-
-      // Attempt to open the app using the iframe
-      iframe.src = appScheme;
-
-      // Redirect to the fallback URL after a delay if the app isn't opened
-      setTimeout(function() {
-        window.location.href = fallbackURL;
-      }, 800); // 1.5 seconds delay
     });
   </script>
 </head>
 <body>
-  <p>Redirecting to the app...</p>
+  <p>Opening CalSocial...</p>
 </body>
 </html>

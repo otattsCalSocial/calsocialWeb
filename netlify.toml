@@ -1,7 +1,0 @@
-[[headers]]
-  for = "/.well-known/*"
-  [headers.values]
-    Content-Type = "application/json"
-
-[build]
-  publish = "/"

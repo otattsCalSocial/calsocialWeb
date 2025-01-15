@@ -11,7 +11,6 @@
       function redirectToStore() {
         const userAgent = navigator.userAgent || navigator.vendor || window.opera;
         if (/iPhone|iPad|iPod/i.test(userAgent)) {
-          displayErrorMessage();
           setTimeout(() => {
             window.location.replace(appStoreURL);
           }, 3000);

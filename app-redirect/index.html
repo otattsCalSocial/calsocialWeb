@@ -2,44 +2,161 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Add Event</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        margin: 0;
+        padding: 20px;
+        text-align: center;
+      }
+      .buttons {
+        margin-top: 20px;
+      }
+      .button {
+        display: inline-block;
+        padding: 12px 24px;
+        margin: 8px;
+        background-color: #007aff;
+        color: white;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 500;
+      }
+      .loading {
+        margin-bottom: 20px;
+      }
+      .hidden {
+        display: none;
+      }
+    </style>
     <script>
       document.addEventListener("DOMContentLoaded", function () {
-        const deepLink = "calsocial://"; // Custom scheme to open the app
-        const universalLink = "https://cal.social"; // Universal link as a fallback
-        const appStoreURL = "https://apps.apple.com/app/calsocial/id6738835548";
-        const playStoreURL =
-          "https://play.google.com/store/apps/details?id=YOUR_PACKAGE_NAME";
+        const config = {
+          appName: "CalSocial",
+          deepLink: "calsocial://",
+          universalLink: "https://cal.social",
+          appStoreURL: "https://apps.apple.com/app/calsocial/id6738835548",
+          playStoreURL:
+            "https://play.google.com/store/apps/details?id=YOUR_PACKAGE_NAME",
+        };
 
-        // Determine platform and attempt to open the app
-        if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-          // Try to open the app using the custom scheme
-          window.location.href = deepLink;
+        const isInAppBrowser =
+          /FBAN|FBAV|Instagram|Line|Twitter|WhatsApp|WeChat|LinkedIn|FB_IAB|GSA/i.test(
+            navigator.userAgent
+          );
+        const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+        const isAndroid = /Android/i.test(navigator.userAgent);
 
-          // Fallback to universal link or App Store after a delay
-          setTimeout(function () {
-            window.location.href = universalLink;
+        const loadingEl = document.getElementById("loading");
+        const buttonsEl = document.getElementById("buttons");
+        const messageEl = document.getElementById("message");
 
-            setTimeout(function () {
-              window.location.href = appStoreURL; // Final fallback
-            }, 1000);
-          }, 1500);
-        } else if (/Android/i.test(navigator.userAgent)) {
-          // Try to open the app using the custom scheme
-          window.location.href = deepLink;
+        function showStoreButtons() {
+          loadingEl.classList.add("hidden");
+          buttonsEl.classList.remove("hidden");
 
-          // Fallback to Play Store after a delay
-          setTimeout(function () {
-            window.location.href = playStoreURL;
-          }, 1500);
-        } else {
-          // For unsupported devices, redirect to the website
-          window.location.href = universalLink;
+          if (isIOS) {
+            messageEl.textContent = `Open ${config.appName} in Safari for the best experience`;
+            document.getElementById("appstore-button").style.display =
+              "inline-block";
+            document.getElementById("playstore-button").style.display = "none";
+          } else if (isAndroid) {
+            messageEl.textContent = `Open ${config.appName} in Chrome for the best experience`;
+            document.getElementById("appstore-button").style.display = "none";
+            document.getElementById("playstore-button").style.display =
+              "inline-block";
+          } else {
+            messageEl.textContent = `Visit ${config.appName} on the web`;
+            document.getElementById("appstore-button").style.display = "none";
+            document.getElementById("playstore-button").style.display = "none";
+          }
         }
+
+        function openApp() {
+          if (isInAppBrowser) {
+            // For in-app browsers, show store buttons immediately
+            showStoreButtons();
+          } else {
+            // For regular browsers, try deep linking
+            const start = Date.now();
+            const fallbackTimeout = 2000;
+
+            // Try opening the app
+            window.location.href = config.deepLink;
+
+            // Fallback detection
+            window.onblur = function () {
+              window.onblur = null;
+              window.onfocus = null;
+            };
+
+            window.onfocus = function () {
+              window.onblur = null;
+              window.onfocus = null;
+
+              if (Date.now() - start < fallbackTimeout) {
+                showStoreButtons();
+              }
+            };
+
+            // Fallback timer
+            setTimeout(function () {
+              if (document.hidden) return;
+
+              window.onblur = null;
+              window.onfocus = null;
+
+              if (isIOS) {
+                window.location.href = config.universalLink;
+                setTimeout(() => {
+                  if (!document.hidden) {
+                    window.location.href = config.appStoreURL;
+                  }
+                }, 1000);
+              } else if (isAndroid) {
+                window.location.href = config.playStoreURL;
+              } else {
+                window.location.href = config.universalLink;
+              }
+            }, fallbackTimeout);
+          }
+        }
+
+        // Start the process
+        openApp();
       });
     </script>
   </head>
   <body>
-    <p>Opening CalSocial...</p>
+    <div id="loading" class="loading">
+      <p>Opening CalSocial...</p>
+    </div>
+
+    <div id="buttons" class="buttons hidden">
+      <p id="message"></p>
+      <a
+        href="https://apps.apple.com/app/calsocial/id6738835548"
+        id="appstore-button"
+        class="button"
+      >
+        Open App Store
+      </a>
+      <a
+        href="https://play.google.com/store/apps/details?id=YOUR_PACKAGE_NAME"
+        id="playstore-button"
+        class="button"
+      >
+        Open Play Store
+      </a>
+      <a href="https://cal.social" class="button"> Open Website </a>
+    </div>
   </body>
 </html>

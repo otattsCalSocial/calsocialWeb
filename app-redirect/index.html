@@ -5,20 +5,35 @@
   <title>Add Event</title>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      const universalLink = window.location.href; // Use the current URL for Universal Link
+      const deepLink = 'calsocial://'; // Custom scheme to open the app
+      const universalLink = 'https://cal.social'; // Universal link as a fallback
       const appStoreURL = 'https://apps.apple.com/app/calsocial/id6738835548';
       const playStoreURL = 'https://play.google.com/store/apps/details?id=YOUR_PACKAGE_NAME';
 
-      // Determine platform and set appropriate store URL
+      // Determine platform and attempt to open the app
       if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-        // On iOS, try universal link first, then fallback to App Store
+        // Try to open the app using the custom scheme
+        window.location.href = deepLink;
+
+        // Fallback to universal link or App Store after a delay
         setTimeout(function() {
-          window.location.href = appStoreURL;
-        }, 1000);
+          window.location.href = universalLink;
+
+          setTimeout(function() {
+            window.location.href = appStoreURL; // Final fallback
+          }, 1000);
+        }, 1500);
       } else if (/Android/i.test(navigator.userAgent)) {
-        window.location.href = playStoreURL;
+        // Try to open the app using the custom scheme
+        window.location.href = deepLink;
+
+        // Fallback to Play Store after a delay
+        setTimeout(function() {
+          window.location.href = playStoreURL;
+        }, 1500);
       } else {
-        window.location.href = 'https://cal.social';
+        // For unsupported devices, redirect to the website
+        window.location.href = universalLink;
       }
     });
   </script>

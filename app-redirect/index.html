@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Add Event</title>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const universalLink = window.location.href; // Use the current URL for Universal Link
+      const appStoreURL = 'https://apps.apple.com/app/calsocial/id6738835548';
+      const playStoreURL = 'https://play.google.com/store/apps/details?id=YOUR_PACKAGE_NAME';
+
+      // Determine platform and set appropriate store URL
+      if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        // On iOS, try universal link first, then fallback to App Store
+        setTimeout(function() {
+          window.location.href = appStoreURL;
+        }, 1000);
+      } else if (/Android/i.test(navigator.userAgent)) {
+        window.location.href = playStoreURL;
+      } else {
+        window.location.href = 'https://cal.social';
+      }
+    });
+  </script>
+</head>
+<body>
+  <p>Opening CalSocial...</p>
+</body>
+</html>

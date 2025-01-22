@@ -1,50 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Open CalSocial</title>
-    <style>
-        body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        }
-        .button {
-            background-color: #007AFF;
-            color: white;
-            padding: 15px 30px;
-            border-radius: 8px;
-            border: none;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        .button:hover {
-            background-color: #0056b3;
-        }
-        .status {
-            margin-top: 20px;
-            display: none;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Add Event</title>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const universalLink = window.location.href; // Use the current URL for Universal Link
+      const appStoreURL = 'https://apps.apple.com/app/calsocial/id6738835548';
+      const playStoreURL = 'https://play.google.com/store/apps/details?id=YOUR_PACKAGE_NAME';
+
+      // Determine platform and set appropriate store URL
+      if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        // On iOS, try universal link first, then fallback to App Store
+        setTimeout(function() {
+          window.location.href = appStoreURL;
+        }, 1000);
+      } else if (/Android/i.test(navigator.userAgent)) {
+        window.location.href = playStoreURL;
+      } else {
+        window.location.href = 'https://cal.social';
+      }
+    });
+  </script>
 </head>
 <body>
-    <button class="button" onclick="openApp()">Open CalSocial</button>
-    <p id="status" class="status">Opening CalSocial...</p>
-
-    <script>
-        function openApp() {
-            document.getElementById('status').style.display = 'block';
-            
-            // Simply try to open the app using the current URL as the universal link
-            const universalLink = window.location.href;
-            window.location.href = universalLink;
-        }
-    </script>
+  <p>Opening CalSocial...</p>
 </body>
 </html>

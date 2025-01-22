@@ -11,31 +11,66 @@
         const playStoreURL =
           "https://play.google.com/store/apps/details?id=YOUR_PACKAGE_NAME";
 
-        // Determine platform and attempt to open the app
-        if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-          // Try to open the app using the custom scheme
-          window.location.href = deepLink;
+        let isAppOpened = false;
 
-          // Fallback to universal link or App Store after a delay
-          setTimeout(function () {
-            window.location.href = universalLink;
+        function openApp() {
+          const userAgent =
+            navigator.userAgent || navigator.vendor || window.opera;
+          const isIOS = /iPhone|iPad|iPod/i.test(userAgent);
+          const isAndroid = /Android/i.test(userAgent);
+          const isChrome = /Chrome/i.test(userAgent);
+          const isFirefox = /Firefox/i.test(userAgent);
+          const isEdge = /Edg/i.test(userAgent);
 
+          // Record the current time
+          const now = Date.now();
+
+          // Set a timeout to redirect if the app was not opened
+          const timeout = setTimeout(function () {
+            if (!isAppOpened) {
+              if (isIOS) {
+                window.location.href = appStoreURL;
+              } else if (isAndroid) {
+                window.location.href = playStoreURL;
+              } else {
+                window.location.href = universalLink;
+              }
+            }
+          }, 1500);
+
+          // Listen for visibility change
+          function handleVisibilityChange() {
+            if (document.hidden) {
+              isAppOpened = true;
+              clearTimeout(timeout);
+            }
+          }
+
+          document.addEventListener("visibilitychange", handleVisibilityChange);
+
+          if (isIOS || isAndroid) {
+            // Attempt to open the app using window.location
+            window.location.href = deepLink;
+
+            // For browsers that may not handle window.location well, use a hidden iframe
+            const iframe = document.createElement("iframe");
+            iframe.style.display = "none";
+            iframe.src = deepLink;
+            document.body.appendChild(iframe);
+
+            // As an additional fallback, use window.open for browsers like Firefox and Edge
             setTimeout(function () {
-              window.location.href = appStoreURL; // Final fallback
+              if (!isAppOpened) {
+                window.open(deepLink, "_blank");
+              }
             }, 1000);
-          }, 1500);
-        } else if (/Android/i.test(navigator.userAgent)) {
-          // Try to open the app using the custom scheme
-          window.location.href = deepLink;
-
-          // Fallback to Play Store after a delay
-          setTimeout(function () {
-            window.location.href = playStoreURL;
-          }, 1500);
-        } else {
-          // For unsupported devices, redirect to the website
-          window.location.href = universalLink;
+          } else {
+            // For unsupported devices or desktop browsers, redirect to the website
+            window.location.href = universalLink;
+          }
         }
+
+        openApp();
       });
     </script>
   </head>

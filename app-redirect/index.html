@@ -2,133 +2,44 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Open CalSocial</title>
-    <link rel="icon" type="image/png" href="assets/logoRed.png" />
-    <link rel="stylesheet" href="styles.css?v=3" />
-    <style>
-      body {
-        background-color: #f5f5f5;
-        color: #333;
-        font-family: Arial, sans-serif;
-        margin: 0;
-        display: flex;
-        flex-direction: column;
-        min-height: 100vh;
-      }
-
-      .main-container {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        padding: 20px;
-        text-align: center;
-        flex: 1;
-      }
-
-      .app-icon {
-        width: 150px;
-        height: 150px;
-        margin-bottom: 20px;
-      }
-
-      h1 {
-        font-size: 32px;
-        margin: 0;
-        color: #9b111e;
-      }
-
-      p {
-        font-size: 18px;
-        margin: 15px 0 30px;
-        color: #555;
-      }
-
-      .button-group {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 15px;
-        justify-content: center;
-      }
-
-      .button-group a {
-        text-decoration: none;
-      }
-
-      .btn {
-        background-color: #9b111e;
-        color: white;
-        padding: 12px 20px;
-        font-size: 16px;
-        border-radius: 4px;
-        border: none;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-      }
-
-      .btn:hover {
-        background-color: #b51622;
-      }
-
-      .btn-light {
-        background-color: #f5f5f5;
-        color: #9b111e;
-        border: 2px solid #9b111e;
-      }
-
-      .btn-light:hover {
-        background-color: #ffe5e5;
-      }
-
-      footer {
-        background-color: #9b111e;
-        color: white;
-        padding: 10px 20px;
-        text-align: center;
-        font-size: 14px;
-      }
-
-      .footer-content a {
-        color: white;
-        text-decoration: underline;
-      }
-    </style>
+    <title>Add Event</title>
     <script>
       document.addEventListener("DOMContentLoaded", function () {
-        const deepLink = "calsocial://";
-        const openAppButton = document.getElementById("openApp");
+        const deepLink = "calsocial://"; // Custom scheme to open the app
+        const universalLink = "https://cal.social"; // Universal link as a fallback
+        const appStoreURL = "https://apps.apple.com/app/calsocial/id6738835548";
+        const playStoreURL =
+          "https://play.google.com/store/apps/details?id=YOUR_PACKAGE_NAME";
 
-        openAppButton.addEventListener("click", function () {
-          // Try to open the app using the deep link
+        // Determine platform and attempt to open the app
+        if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+          // Try to open the app using the custom scheme
           window.location.href = deepLink;
-        });
+
+          // Fallback to universal link or App Store after a delay
+          setTimeout(function () {
+            window.location.href = universalLink;
+
+            setTimeout(function () {
+              window.location.href = appStoreURL; // Final fallback
+            }, 1000);
+          }, 1500);
+        } else if (/Android/i.test(navigator.userAgent)) {
+          // Try to open the app using the custom scheme
+          window.location.href = deepLink;
+
+          // Fallback to Play Store after a delay
+          setTimeout(function () {
+            window.location.href = playStoreURL;
+          }, 1500);
+        } else {
+          // For unsupported devices, redirect to the website
+          window.location.href = universalLink;
+        }
       });
     </script>
   </head>
   <body>
-    <div class="main-container">
-      <img src="assets/icon.png" alt="Calsocial Icon" class="app-icon" />
-      <h1>CalSocial Events</h1>
-      <p>Join your event in the app, or download it to get started.</p>
-      <div class="button-group">
-        <button class="btn" id="openApp">Open App</button>
-        <a
-          href="https://apps.apple.com/app/calsocial/id6738835548"
-          class="btn btn-light"
-          >Download on the App Store</a
-        >
-        <a
-          href="https://play.google.com/store/apps/details?id=YOUR_PACKAGE_NAME"
-          class="btn btn-light"
-          >Get it on Google Play</a
-        >
-      </div>
-    </div>
-    <footer>
-      <div class="footer-content">
-        <p>Need help? <a href="support.html">Contact Support</a></p>
-      </div>
-    </footer>
+    <p>Opening CalSocial...</p>
   </body>
 </html>

@@ -5,8 +5,20 @@
     <title>Add Event</title>
     <script>
       document.addEventListener("DOMContentLoaded", function () {
-        const deepLink = "calsocial://"; // Custom scheme to open the app
-        const universalLink = "https://cal.social"; // Universal link as a fallback
+        // Function to extract the event ID from the URL path
+        function getEventPath() {
+          const path = window.location.pathname; // e.g., "/event/12345"
+          // Optionally, you can add validation to ensure the path matches expected patterns
+          return path.startsWith("/") ? path : "/" + path;
+        }
+
+        const eventPath = getEventPath(); // e.g., "/event/12345"
+        const deepLinkBase = "calsocial://";
+        const universalLinkBase = "https://cal.social";
+
+        const deepLink = deepLinkBase + eventPath; // e.g., "calsocial://event/12345"
+        const universalLink = universalLinkBase + eventPath; // e.g., "https://cal.social/event/12345"
+
         const appStoreURL = "https://apps.apple.com/app/calsocial/id6738835548";
         const playStoreURL =
           "https://play.google.com/store/apps/details?id=YOUR_PACKAGE_NAME";
@@ -21,9 +33,6 @@
           const isChrome = /Chrome/i.test(userAgent);
           const isFirefox = /Firefox/i.test(userAgent);
           const isEdge = /Edg/i.test(userAgent);
-
-          // Record the current time
-          const now = Date.now();
 
           // Set a timeout to redirect if the app was not opened
           const timeout = setTimeout(function () {

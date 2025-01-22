@@ -2,44 +2,110 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Add Event</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Open Event in CalSocial</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+        background: #f5f5f5;
+      }
+      .container {
+        text-align: center;
+        padding: 20px;
+      }
+      .loader {
+        border: 3px solid #f3f3f3;
+        border-radius: 50%;
+        border-top: 3px solid #3498db;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 20px auto;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
     <script>
       document.addEventListener("DOMContentLoaded", function () {
-        const deepLink = "calsocial://"; // Custom scheme to open the app
-        const universalLink = "https://cal.social"; // Universal link as a fallback
+        // Get the event ID from the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const eventId =
+          urlParams.get("eventId") || window.location.pathname.split("/").pop();
+
+        // Define the URLs
+        const deepLink = `calsocial://event/${eventId}`; // Deep link with event ID
+        const universalLink = `https://cal.social/event/${eventId}`; // Universal link with event ID
         const appStoreURL = "https://apps.apple.com/app/calsocial/id6738835548";
         const playStoreURL =
           "https://play.google.com/store/apps/details?id=YOUR_PACKAGE_NAME";
 
-        // Determine platform and attempt to open the app
-        if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-          // Try to open the app using the custom scheme
-          window.location.href = deepLink;
+        let hasRedirected = false;
 
-          // Fallback to universal link or App Store after a delay
-          setTimeout(function () {
+        // Function to handle app opening failure
+        function handleAppOpenFailed() {
+          if (hasRedirected) return;
+          hasRedirected = true;
+
+          if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+            window.location.href = appStoreURL;
+          } else if (/Android/i.test(navigator.userAgent)) {
+            window.location.href = playStoreURL;
+          } else {
             window.location.href = universalLink;
+          }
+        }
 
-            setTimeout(function () {
-              window.location.href = appStoreURL; // Final fallback
-            }, 1000);
+        // Try to open the app
+        if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+          // For iOS, try Universal Links first
+          window.location.href = universalLink;
+
+          // If Universal Link fails, try custom scheme
+          setTimeout(function () {
+            window.location.href = deepLink;
+
+            // If both fail, go to App Store
+            setTimeout(handleAppOpenFailed, 1500);
           }, 1500);
         } else if (/Android/i.test(navigator.userAgent)) {
-          // Try to open the app using the custom scheme
-          window.location.href = deepLink;
+          // For Android, try Intent URL
+          const intentUrl = `intent://event/${eventId}#Intent;scheme=calsocial;package=YOUR_PACKAGE_NAME;end`;
+          window.location.href = intentUrl;
 
-          // Fallback to Play Store after a delay
+          // Fallback to custom scheme
           setTimeout(function () {
-            window.location.href = playStoreURL;
+            window.location.href = deepLink;
+
+            // If both fail, go to Play Store
+            setTimeout(handleAppOpenFailed, 1500);
           }, 1500);
         } else {
-          // For unsupported devices, redirect to the website
+          // For desktop or unsupported devices
           window.location.href = universalLink;
         }
       });
     </script>
   </head>
   <body>
-    <p>Opening CalSocial...</p>
+    <div class="container">
+      <h1>Opening CalSocial...</h1>
+      <div class="loader"></div>
+      <p>
+        If nothing happens, <a href="#" id="manual-open">click here</a> to open
+        manually.
+      </p>
+    </div>
   </body>
 </html>

@@ -5,55 +5,25 @@
   <title>Add Event</title>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      const deepLink = `calsocial://event/${window.location.pathname.split('/').pop()}`;
-      const universalLink = window.location.href;
+      const universalLink = window.location.href; // Use the current URL for Universal Link
       const appStoreURL = 'https://apps.apple.com/app/calsocial/id6738835548';
       const playStoreURL = 'https://play.google.com/store/apps/details?id=YOUR_PACKAGE_NAME';
-      
-      let visited = false;
-      
-      function tryOpenApp() {
-        if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-          // Try Universal Link
-          location.href = universalLink;
-          
-          // Fallback to custom URL scheme
-          setTimeout(() => {
-            if (!visited) {
-              visited = true;
-              location.href = deepLink;
-              
-              // Fallback to App Store after trying both
-              setTimeout(() => {
-                if (document.hidden) return;
-                location.href = appStoreURL;
-              }, 2000);
-            }
-          }, 1000);
-        } else if (/Android/i.test(navigator.userAgent)) {
-          // Try Intent URL
-          location.href = `intent://event/${window.location.pathname.split('/').pop()}#Intent;scheme=calsocial;package=YOUR_PACKAGE_NAME;end`;
-          
-          setTimeout(() => {
-            if (!visited) {
-              visited = true;
-              location.href = playStoreURL;
-            }
-          }, 1500);
-        } else {
-          location.href = 'https://cal.social';
-        }
-      }
 
-      // Start the deep linking process
-      tryOpenApp();
+      // Determine platform and set appropriate store URL
+      if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        // On iOS, try universal link first, then fallback to App Store
+        setTimeout(function() {
+          window.location.href = appStoreURL;
+        }, 1000);
+      } else if (/Android/i.test(navigator.userAgent)) {
+        window.location.href = playStoreURL;
+      } else {
+        window.location.href = 'https://cal.social';
+      }
     });
   </script>
 </head>
 <body>
-  <div style="text-align: center; padding: 20px;">
-    <h1>Opening CalSocial...</h1>
-    <p>If nothing happens, <a href="#" onclick="tryOpenApp(); return false;">click here</a></p>
-  </div>
+  <p>Opening CalSocial...</p>
 </body>
 </html>

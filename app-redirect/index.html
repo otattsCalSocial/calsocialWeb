@@ -2,42 +2,28 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Open CalSocial</title>
+  <title>Add Event</title>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const universalLink = window.location.href; // Use the current URL for Universal Link
       const appStoreURL = 'https://apps.apple.com/app/calsocial/id6738835548';
       const playStoreURL = 'https://play.google.com/store/apps/details?id=YOUR_PACKAGE_NAME';
-      const fallbackURL = 'https://cal.social';
 
-      // Determine platform and display appropriate options
-      const userAgent = navigator.userAgent;
-      const container = document.getElementById('action-container');
-
-      if (/iPhone|iPad|iPod/i.test(userAgent)) {
-        container.innerHTML = `
-          <p>You're on an iOS device. Choose an option:</p>
-          <button onclick="window.location.href='${universalLink}'">Open App</button>
-          <button onclick="window.location.href='${appStoreURL}'">Go to App Store</button>
-        `;
-      } else if (/Android/i.test(userAgent)) {
-        container.innerHTML = `
-          <p>You're on an Android device. Choose an option:</p>
-          <button onclick="window.location.href='${universalLink}'">Open App</button>
-          <button onclick="window.location.href='${playStoreURL}'">Go to Play Store</button>
-        `;
+      // Determine platform and set appropriate store URL
+      if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        // On iOS, try universal link first, then fallback to App Store
+        setTimeout(function() {
+          window.location.href = appStoreURL;
+        }, 1000);
+      } else if (/Android/i.test(navigator.userAgent)) {
+        window.location.href = playStoreURL;
       } else {
-        container.innerHTML = `
-          <p>You're on an unsupported device. Visit our website:</p>
-          <button onclick="window.location.href='${fallbackURL}'">Visit CalSocial</button>
-        `;
+        window.location.href = 'https://cal.social';
       }
     });
   </script>
 </head>
 <body>
-  <div id="action-container">
-    <p>Loading options...</p>
-  </div>
+  <p>Opening CalSocial...</p>
 </body>
 </html>

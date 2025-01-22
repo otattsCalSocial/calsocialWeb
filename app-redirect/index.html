@@ -2,201 +2,44 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Open Event in CalSocial</title>
-    <style>
-      body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-          sans-serif;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 100vh;
-        margin: 0;
-        background: #f5f5f5;
-      }
-      .container {
-        text-align: center;
-        padding: 20px;
-      }
-      .loader {
-        border: 3px solid #f3f3f3;
-        border-radius: 50%;
-        border-top: 3px solid #3498db;
-        width: 40px;
-        height: 40px;
-        animation: spin 1s linear infinite;
-        margin: 20px auto;
-      }
-      @keyframes spin {
-        0% {
-          transform: rotate(0deg);
-        }
-        100% {
-          transform: rotate(360deg);
-        }
-      }
-      .button {
-        display: inline-block;
-        padding: 10px 20px;
-        background: #3498db;
-        color: white;
-        text-decoration: none;
-        border-radius: 5px;
-        margin: 10px;
-      }
-      .hidden {
-        display: none;
-      }
-    </style>
+    <title>Add Event</title>
     <script>
       document.addEventListener("DOMContentLoaded", function () {
-        // Configuration
-        const COLD_START_TIMEOUT = 3500; // Longer timeout for cold starts
-        const BACKGROUND_TIMEOUT = 2000; // Timeout for background wake
-
-        // Get the event ID from the URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const eventId =
-          urlParams.get("eventId") || window.location.pathname.split("/").pop();
-
-        // Define the URLs
-        const deepLink = `calsocial://event/${eventId}`;
-        const universalLink = `https://cal.social/event/${eventId}`;
+        const deepLink = "calsocial://"; // Custom scheme to open the app
+        const universalLink = "https://cal.social"; // Universal link as a fallback
         const appStoreURL = "https://apps.apple.com/app/calsocial/id6738835548";
         const playStoreURL =
           "https://play.google.com/store/apps/details?id=YOUR_PACKAGE_NAME";
 
-        let hasRedirected = false;
-        let startTime = Date.now();
+        // Determine platform and attempt to open the app
+        if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+          // Try to open the app using the custom scheme
+          window.location.href = deepLink;
 
-        // Elements
-        const loadingEl = document.querySelector(".loader");
-        const manualOpenEl = document.getElementById("manual-open");
-        const storeButtonsEl = document.getElementById("store-buttons");
-
-        // Platform detection
-        const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-        const isAndroid = /Android/i.test(navigator.userAgent);
-
-        // Show store buttons after timeout
-        function showStoreButtons() {
-          if (storeButtonsEl) {
-            loadingEl.classList.add("hidden");
-            storeButtonsEl.classList.remove("hidden");
-          }
-        }
-
-        // Handle failed app open
-        function handleAppOpenFailed() {
-          if (hasRedirected) return;
-          hasRedirected = true;
-
-          // Show store buttons instead of immediate redirect
-          showStoreButtons();
-        }
-
-        // Handle manual open attempt
-        function handleManualOpen(e) {
-          e.preventDefault();
-          startTime = Date.now(); // Reset timer
-
-          if (isIOS) {
-            // Try Universal Link first
+          // Fallback to universal link or App Store after a delay
+          setTimeout(function () {
             window.location.href = universalLink;
 
-            setTimeout(() => {
-              // Then try deep link
-              window.location.href = deepLink;
+            setTimeout(function () {
+              window.location.href = appStoreURL; // Final fallback
             }, 1000);
-          } else if (isAndroid) {
-            // Try Intent URL
-            const intentUrl = `intent://event/${eventId}#Intent;scheme=calsocial;package=YOUR_PACKAGE_NAME;S.browser_fallback_url=${encodeURIComponent(
-              playStoreURL
-            )};end`;
-            window.location.href = intentUrl;
-          }
-        }
+          }, 1500);
+        } else if (/Android/i.test(navigator.userAgent)) {
+          // Try to open the app using the custom scheme
+          window.location.href = deepLink;
 
-        // Set up manual open handler
-        if (manualOpenEl) {
-          manualOpenEl.addEventListener("click", handleManualOpen);
-        }
-
-        // Visibility change detection
-        let wasHidden = document.hidden;
-        document.addEventListener("visibilitychange", () => {
-          if (document.hidden && !wasHidden) {
-            // Page was hidden (app possibly opened)
-            wasHidden = true;
-          } else if (!document.hidden && wasHidden) {
-            // Page became visible again (app open failed)
-            const timeElapsed = Date.now() - startTime;
-            if (timeElapsed < COLD_START_TIMEOUT) {
-              handleAppOpenFailed();
-            }
-          }
-        });
-
-        // Initial app open attempt
-        if (isIOS) {
-          // Try Universal Link
-          window.location.href = universalLink;
-
-          // Fallback to deep link after a delay
-          setTimeout(() => {
-            if (!document.hidden) {
-              window.location.href = deepLink;
-
-              // If both fail, show store buttons
-              setTimeout(handleAppOpenFailed, COLD_START_TIMEOUT);
-            }
-          }, BACKGROUND_TIMEOUT);
-        } else if (isAndroid) {
-          // Try Intent URL with fallback URL embedded
-          const intentUrl = `intent://event/${eventId}#Intent;scheme=calsocial;package=YOUR_PACKAGE_NAME;S.browser_fallback_url=${encodeURIComponent(
-            playStoreURL
-          )};end`;
-          window.location.href = intentUrl;
-
-          // Fallback to deep link
-          setTimeout(() => {
-            if (!document.hidden) {
-              window.location.href = deepLink;
-
-              // If both fail, show store buttons
-              setTimeout(handleAppOpenFailed, COLD_START_TIMEOUT);
-            }
-          }, BACKGROUND_TIMEOUT);
+          // Fallback to Play Store after a delay
+          setTimeout(function () {
+            window.location.href = playStoreURL;
+          }, 1500);
         } else {
-          // Desktop or unsupported device
+          // For unsupported devices, redirect to the website
           window.location.href = universalLink;
         }
       });
     </script>
   </head>
   <body>
-    <div class="container">
-      <h1>Opening CalSocial...</h1>
-      <div class="loader"></div>
-      <p>
-        If nothing happens, <a href="#" id="manual-open">click here</a> to try
-        again.
-      </p>
-
-      <div id="store-buttons" class="hidden">
-        <p>Don't have CalSocial installed?</p>
-        <a
-          href="https://apps.apple.com/app/calsocial/id6738835548"
-          class="button ios-store"
-          >Download on the App Store</a
-        >
-        <a
-          href="https://play.google.com/store/apps/details?id=YOUR_PACKAGE_NAME"
-          class="button android-store"
-          >Get it on Google Play</a
-        >
-      </div>
-    </div>
+    <p>Opening CalSocial...</p>
   </body>
 </html>

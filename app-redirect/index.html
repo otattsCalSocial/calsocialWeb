@@ -3,22 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      name="description"
-      content="Open or install CalSocial to view this event"
-    />
     <title>Open Event in CalSocial</title>
     <style>
-      :root {
-        --primary-color: #3498db;
-        --primary-hover: #2980b9;
-        --background: #f5f5f5;
-        --text: #333;
-        --shadow: rgba(0, 0, 0, 0.1);
-        --success: #2ecc71;
-        --error: #e74c3c;
-      }
-
       body {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
           Oxygen, Ubuntu, Cantarell, sans-serif;
@@ -30,27 +16,20 @@
         margin: 0;
         padding: 20px;
         text-align: center;
-        background-color: var(--background);
+        background-color: #f5f5f5;
       }
-
       .container {
         max-width: 600px;
         width: 100%;
         padding: 20px;
         background: white;
         border-radius: 12px;
-        box-shadow: 0 2px 10px var(--shadow);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
       }
-
-      .heading {
-        color: var(--text);
-        margin-bottom: 1.5rem;
-      }
-
       .button {
         display: inline-block;
         padding: 12px 24px;
-        background-color: var(--primary-color);
+        background-color: #3498db;
         color: white;
         text-decoration: none;
         border-radius: 8px;
@@ -58,272 +37,106 @@
         font-weight: 600;
         border: none;
         cursor: pointer;
-        transition: background-color 0.2s, transform 0.1s;
+        transition: background-color 0.2s;
       }
-
       .button:hover {
-        background-color: var(--primary-hover);
+        background-color: #2980b9;
       }
-
-      .button:focus {
-        outline: 3px solid var(--primary-hover);
-        outline-offset: 2px;
-      }
-
-      .button:active {
-        transform: scale(0.98);
-      }
-
       .message {
         margin: 20px 0;
-        color: var(--text);
+        color: #333;
         font-size: 1.1em;
       }
-
-      .copy-button {
+      #copyButton {
         background: none;
         border: none;
-        color: var(--primary-color);
+        color: #3498db;
         text-decoration: underline;
         cursor: pointer;
         padding: 5px;
         margin: 5px;
-        font-size: 1em;
       }
-
-      .copy-button:focus {
-        outline: 2px solid var(--primary-color);
-        outline-offset: 2px;
-      }
-
-      .copy-confirm {
-        color: var(--success);
+      #copyConfirm {
+        color: green;
         display: none;
         margin: 5px;
-      }
-
-      .error-message {
-        color: var(--error);
-        margin: 10px 0;
-      }
-
-      .loading {
-        display: none;
-        margin: 20px 0;
-      }
-
-      .loading::after {
-        content: "...";
-        animation: dots 1.5s steps(4, end) infinite;
-      }
-
-      @keyframes dots {
-        0%,
-        20% {
-          content: ".";
-        }
-        40% {
-          content: "..";
-        }
-        60% {
-          content: "...";
-        }
-        80%,
-        100% {
-          content: "";
-        }
-      }
-
-      @media (prefers-reduced-motion: reduce) {
-        .button {
-          transition: none;
-        }
-
-        .loading::after {
-          animation: none;
-        }
       }
     </style>
   </head>
   <body>
-    <div class="container" role="main">
-      <h1 class="heading">Open in CalSocial</h1>
-
-      <div class="message" id="message" role="status" aria-live="polite">
-        Loading...
+    <div class="container">
+      <div class="message" id="message">
+        To open this event in CalSocial, you'll need to:
       </div>
 
-      <div
-        id="loadingIndicator"
-        class="loading"
-        role="status"
-        aria-live="polite"
-      >
-        Opening CalSocial
-      </div>
-
-      <div id="iosInstructions" style="display: none">
-        <h2>Follow these steps:</h2>
-        <ol>
-          <li>
-            Copy this link:
-            <button
-              id="copyButton"
-              class="copy-button"
-              onclick="copyToClipboard()"
-              aria-label="Copy link to clipboard"
-            >
-              Copy Link
-            </button>
-            <span id="copyConfirm" class="copy-confirm" aria-hidden="true"
-              >✓ Copied!</span
-            >
-          </li>
-          <li>Open Safari and paste the link</li>
-        </ol>
+      <div id="iosInstructions">
+        1. Copy this link:<br />
+        <button id="copyButton" onclick="copyToClipboard()">Copy Link</button>
+        <span id="copyConfirm">✓ Copied!</span><br /><br />
+        2. Open Safari and paste the link
       </div>
 
       <div id="regularOptions" style="display: none">
-        <button
-          class="button"
-          onclick="openInApp()"
-          aria-label="Open event in CalSocial app"
-        >
-          Open in CalSocial
-        </button>
+        <button class="button" onclick="openInApp()">Open in CalSocial</button>
         <br />
-        <a
-          id="storeLink"
-          class="button"
-          aria-label="Get CalSocial from app store"
-        >
-          Get the App
-        </a>
+        <a id="storeLink" class="button">Get the App</a>
       </div>
-
-      <div
-        id="errorMessage"
-        class="error-message"
-        role="alert"
-        style="display: none"
-      ></div>
     </div>
 
     <script>
-      // Constants
-      const TIMEOUTS = {
-        COPY_CONFIRM: 2000,
-        APP_OPEN: 2500,
-      };
-
       const STATE = {
         uid: null,
         platform: null,
         isInAppBrowser: false,
         urls: {},
-        isLoading: false,
       };
 
-      function showError(message) {
-        const errorEl = document.getElementById("errorMessage");
-        errorEl.textContent = message;
-        errorEl.style.display = "block";
-      }
-
-      function setLoading(isLoading) {
-        STATE.isLoading = isLoading;
-        document.getElementById("loadingIndicator").style.display = isLoading
-          ? "block"
-          : "none";
-      }
-
       function detectEnvironment() {
-        try {
-          const ua = navigator.userAgent || navigator.vendor || window.opera;
-          STATE.isInAppBrowser =
-            /FBAN|FBAV|Instagram|Line|Twitter|WhatsApp|WeChat|LinkedIn|Messenger/i.test(
-              ua
-            );
+        const ua = navigator.userAgent || navigator.vendor || window.opera;
+        STATE.isInAppBrowser =
+          /FBAN|FBAV|Instagram|Line|Twitter|WhatsApp|WeChat|LinkedIn|Messenger/i.test(
+            ua
+          );
 
-          if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) {
-            STATE.platform = "ios";
-          } else if (/Android/.test(ua)) {
-            STATE.platform = "android";
-          } else {
-            STATE.platform = "desktop";
-          }
-
-          const pathParts = window.location.pathname.split("/");
-          STATE.uid = pathParts[pathParts.length - 1];
-
-          if (!STATE.uid) {
-            throw new Error("Event ID is missing");
-          }
-
-          STATE.urls = {
-            deepLink: `calsocial://event/${STATE.uid}`,
-            universalLink: `https://cal.social/event/${STATE.uid}`,
-            appStoreURL: "https://apps.apple.com/app/calsocial/id6738835548",
-            playStoreURL:
-              "https://play.google.com/store/apps/details?id=social.cal.calsocial",
-          };
-        } catch (error) {
-          showError(error.message || "Failed to initialize app");
-          throw error;
+        if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) {
+          STATE.platform = "ios";
+        } else if (/Android/.test(ua)) {
+          STATE.platform = "android";
+        } else {
+          STATE.platform = "desktop";
         }
+
+        const pathParts = window.location.pathname.split("/");
+        STATE.uid = pathParts[pathParts.length - 1];
+
+        STATE.urls = {
+          deepLink: `calsocial://event/${STATE.uid}`,
+          universalLink: `https://cal.social/event/${STATE.uid}`,
+          appStoreURL: "https://apps.apple.com/app/calsocial/id6738835548",
+          playStoreURL:
+            "https://play.google.com/store/apps/details?id=social.cal.calsocial",
+        };
       }
 
       async function copyToClipboard() {
-        const copyButton = document.getElementById("copyButton");
-        const confirm = document.getElementById("copyConfirm");
-
-        copyButton.disabled = true;
-
         try {
           await navigator.clipboard.writeText(STATE.urls.universalLink);
+          const confirm = document.getElementById("copyConfirm");
           confirm.style.display = "inline";
           setTimeout(() => {
             confirm.style.display = "none";
-            copyButton.disabled = false;
-          }, TIMEOUTS.COPY_CONFIRM);
+          }, 2000);
         } catch (err) {
-          // Fallback to manual copy
-          const textarea = document.createElement("textarea");
-          textarea.value = STATE.urls.universalLink;
-          textarea.style.position = "fixed";
-          document.body.appendChild(textarea);
-          textarea.focus();
-          textarea.select();
-
-          try {
-            document.execCommand("copy");
-            confirm.style.display = "inline";
-            setTimeout(() => {
-              confirm.style.display = "none";
-              copyButton.disabled = false;
-            }, TIMEOUTS.COPY_CONFIRM);
-          } catch (err) {
-            showError(
-              "Please copy this link manually: " + STATE.urls.universalLink
-            );
-          } finally {
-            document.body.removeChild(textarea);
-            copyButton.disabled = false;
-          }
+          alert("Please copy this link manually: " + STATE.urls.universalLink);
         }
       }
 
       function openInApp() {
-        if (STATE.isLoading) return;
-
-        setLoading(true);
-
         if (STATE.platform === "ios") {
           window.location.href = STATE.urls.deepLink;
           setTimeout(() => {
             window.location.href = STATE.urls.universalLink;
-            setLoading(false);
-          }, TIMEOUTS.APP_OPEN);
+          }, 2500);
         } else if (STATE.platform === "android") {
           const intentUrl = `intent://event/${
             STATE.uid
@@ -331,51 +144,38 @@
             STATE.urls.universalLink
           )};end`;
           window.location.href = intentUrl;
-          setLoading(false);
         } else {
           window.location.href = STATE.urls.universalLink;
-          setLoading(false);
         }
       }
 
       function initialize() {
-        try {
-          detectEnvironment();
+        detectEnvironment();
 
-          const message = document.getElementById("message");
-          const storeLink = document.getElementById("storeLink");
+        if (!STATE.uid) {
+          document.getElementById("message").textContent =
+            "Error: Event ID is missing";
+          return;
+        }
 
-          message.textContent =
-            "To open this event in CalSocial, you'll need to:";
+        const storeLink = document.getElementById("storeLink");
+        storeLink.href =
+          STATE.platform === "ios"
+            ? STATE.urls.appStoreURL
+            : STATE.platform === "android"
+            ? STATE.urls.playStoreURL
+            : STATE.urls.universalLink;
 
-          storeLink.href =
-            STATE.platform === "ios"
-              ? STATE.urls.appStoreURL
-              : STATE.platform === "android"
-              ? STATE.urls.playStoreURL
-              : STATE.urls.universalLink;
-
-          // For iOS in-app browsers, show copy link instructions
-          if (STATE.platform === "ios" && STATE.isInAppBrowser) {
-            document.getElementById("iosInstructions").style.display = "block";
-            document.getElementById("regularOptions").style.display = "none";
-          } else {
-            document.getElementById("iosInstructions").style.display = "none";
-            document.getElementById("regularOptions").style.display = "block";
-            openInApp();
-          }
-        } catch (error) {
-          console.error("Initialization failed:", error);
-          showError("Failed to initialize app");
+        // For iOS in-app browsers, show copy link instructionss
+        if (STATE.platform === "ios" && STATE.isInAppBrowser) {
+          document.getElementById("iosInstructions").style.display = "block";
+          document.getElementById("regularOptions").style.display = "none";
+        } else {
+          document.getElementById("iosInstructions").style.display = "none";
+          document.getElementById("regularOptions").style.display = "block";
+          openInApp();
         }
       }
-
-      // Handle errors globally
-      window.onerror = function (msg, url, line, col, error) {
-        showError("An unexpected error occurred");
-        console.error("Global error:", { msg, url, line, col, error });
-        return false;
-      };
 
       document.addEventListener("DOMContentLoaded", initialize);
     </script>

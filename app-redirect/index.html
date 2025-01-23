@@ -43,6 +43,10 @@
             border-radius: 5px;
             font-weight: bold;
             cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .open-button:hover {
+            background-color: #f0f0f0;
         }
         .loader {
             border: 3px solid #f3f3f3;
@@ -73,6 +77,15 @@
             text-decoration: none;
             border-radius: 5px;
             margin: 10px;
+            transition: background-color 0.3s;
+        }
+        .fallback a:hover {
+            background-color: #2980b9;
+        }
+        #debug-info {
+            margin-top: 20px;
+            color: #666;
+            font-size: 0.9em;
         }
     </style>
 </head>
@@ -91,34 +104,46 @@
         <a href="#" id="storeLink">Get the App</a>
         <a href="#" id="openInBrowser" onclick="handleExternalOpen()">Open in Browser</a>
     </div>
+    <div id="debug-info"></div>
 
     <script>
-        // Get event ID from URL
+        function debugLog(message) {
+            const debugDiv = document.getElementById('debug-info');
+            debugDiv.innerHTML += `<div>${message}</div>`;
+        }
+
         function getEventId() {
             const pathParts = window.location.pathname.split('/');
-            return pathParts[pathParts.length - 1];
+            const eventId = pathParts[pathParts.length - 1];
+            debugLog(`Event ID: ${eventId}`);
+            return eventId;
         }
 
         function isInAppBrowser() {
             const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-            return /FBAN|FBAV|Instagram|Line|Twitter|WhatsApp|WeChat|LinkedIn|Messenger/i.test(userAgent);
+            const isInApp = /FBAN|FBAV|Instagram|Line|Twitter|WhatsApp|WeChat|LinkedIn|Messenger/i.test(userAgent);
+            debugLog(`In-app browser detected: ${isInApp}`);
+            return isInApp;
         }
 
         function handleExternalOpen() {
             const uid = getEventId();
             const universalLink = `https://cal.social/event/${uid}`;
+            debugLog(`Opening universal link: ${universalLink}`);
             
-            // Open in new tab/window to break out of in-app browsers
-            window.open(universalLink, '_blank');
+            // Try opening in new window first
+            const newWindow = window.open(universalLink, '_blank');
             
-            // Fallback for browsers that block window.open
-            setTimeout(() => {
+            // If window.open was blocked or failed, try direct navigation
+            if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+                debugLog('window.open blocked, trying direct navigation');
                 window.location.href = universalLink;
-            }, 100);
+            }
         }
 
         function openApp() {
             const uid = getEventId();
+            debugLog(`Starting openApp with UID: ${uid}`);
 
             if (!uid) {
                 document.querySelector('.message').textContent = 'Error: Event ID is missing';
@@ -133,8 +158,8 @@
 
             const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
             const isAndroid = /Android/.test(navigator.userAgent);
+            debugLog(`Platform - iOS: ${isIOS}, Android: ${isAndroid}`);
 
-            // Set up store link
             const storeLink = document.getElementById('storeLink');
             if (isIOS) {
                 storeLink.href = appStoreURL;
@@ -144,7 +169,6 @@
                 storeLink.href = universalLink;
             }
 
-            // Check if we're in an in-app browser
             if (isInAppBrowser()) {
                 document.getElementById('browser-banner').style.display = 'block';
                 document.querySelector('.message').textContent = 'Open in CalSocial app';
@@ -153,14 +177,12 @@
                 return;
             }
 
-            // Regular deep linking flow
             const fallbackTimer = setTimeout(() => {
                 document.getElementById('fallback').style.display = 'block';
                 document.querySelector('.loader').style.display = 'none';
                 document.querySelector('.message').textContent = 'Unable to open CalSocial';
             }, 1500);
 
-            // Try to open the app
             if (isIOS) {
                 window.location.href = deepLink;
             } else if (isAndroid) {

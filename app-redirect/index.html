@@ -131,7 +131,8 @@
                 if (STATE.platform === 'ios') {
                     // For iOS in-app browsers, try to open in default browser first
                     if (STATE.isInAppBrowser) {
-                        window.location.href = `x-web-search://?${encodeURIComponent(urls.universalLink)}`;
+                        // Try to exit to Safari first on iOS
+                        window.location.href = `safari-https://cal.social/event/${STATE.uid}`;
                         setTimeout(() => {
                             window.location.href = urls.deepLink;
                         }, 100);
@@ -147,7 +148,11 @@
                 if (STATE.isInAppBrowser) {
                     // Open in default browser instead of in-app browser
                     if (STATE.platform === 'ios') {
-                        window.location.href = `x-web-search://?${encodeURIComponent(urls.universalLink)}`;
+                        // Try to open in Safari
+                        window.location.href = `safari-https://cal.social/event/${STATE.uid}`;
+                        setTimeout(() => {
+                            window.location.href = urls.universalLink;
+                        }, 100);
                     } else if (STATE.platform === 'android') {
                         window.location.href = `intent://${urls.universalLink.replace(/^https?:\/\//, '')}#Intent;scheme=https;package=com.android.chrome;end`;
                     }

@@ -21,74 +21,65 @@
       min-height: 100vh;
       flex-direction: column;
     }
+    .fallback {
+      display: none;
+      text-align: center;
+    }
   </style>
   <script>
-    function openApp() {
+    function detectBrowserAndRedirect() {
       const uid = window.location.pathname.split('/').pop();
       const deepLink = `calsocial://event/${uid}`;
       const universalLink = `https://cal.social/event/${uid}`;
       const appStoreURL = 'https://apps.apple.com/app/calsocial/id6738835548';
       const playStoreURL = 'https://play.google.com/store/apps/details?id=social.cal.calsocial';
 
-      // Get the current time before trying to open the app
-      const startTime = Date.now();
+      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+      const isIOS = /iPhone|iPad|iPod/i.test(userAgent);
+      const isAndroid = /Android/i.test(userAgent);
 
-      // Handle visibility change
-      document.addEventListener('visibilitychange', function() {
-        if (document.hidden && Date.now() - startTime < 3000) {
-          // App was successfully opened
-          return;
-        }
-      });
-
-      if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-        // For iOS: Try both Universal Link and custom URL scheme
-        // First create and click a hidden anchor with universal link
-        const universalLinkEl = document.createElement('a');
-        universalLinkEl.setAttribute('href', universalLink);
-        universalLinkEl.style.display = 'none';
-        document.body.appendChild(universalLinkEl);
-        universalLinkEl.click();
-        
-        // Then try the custom scheme after a short delay
+      if (isIOS) {
+        // iOS: Universal Link preferred, fallback to custom scheme
+        window.location.href = universalLink;
         setTimeout(() => {
           window.location.href = deepLink;
-          
-          // If neither worked after 2 seconds, go to App Store
           setTimeout(() => {
             if (!document.hidden) {
-              window.location.href = appStoreURL;
+              document.querySelector('.fallback').style.display = 'block';
+              document.querySelector('#storeLink').setAttribute('href', appStoreURL);
             }
           }, 2000);
-        }, 100);
-      } else if (/Android/i.test(navigator.userAgent)) {
-        // For Android: Try Intent URL first
+        }, 500);
+      } else if (isAndroid) {
+        // Android: Intent preferred, fallback to custom scheme
         const intentUrl = `intent://event/${uid}#Intent;scheme=calsocial;package=social.cal.calsocial;end`;
         window.location.href = intentUrl;
-        
-        // Fallback to custom scheme
         setTimeout(() => {
-          if (!document.hidden) {
-            window.location.href = deepLink;
-            
-            // If still here after 2 seconds, go to Play Store
-            setTimeout(() => {
-              if (!document.hidden) {
-                window.location.href = playStoreURL;
-              }
-            }, 2000);
-          }
-        }, 100);
+          window.location.href = deepLink;
+          setTimeout(() => {
+            if (!document.hidden) {
+              document.querySelector('.fallback').style.display = 'block';
+              document.querySelector('#storeLink').setAttribute('href', playStoreURL);
+            }
+          }, 2000);
+        }, 500);
       } else {
-        // For desktop: Open universal link
-        window.location.href = universalLink;
+        // Desktop or unsupported: Show button to manually open the link
+        document.querySelector('.fallback').style.display = 'block';
+        document.querySelector('#storeLink').setAttribute('href', universalLink);
       }
     }
+
+    // Trigger the logic on page load
+    window.onload = detectBrowserAndRedirect;
   </script>
 </head>
 <body>
   <div class="container">
-    <button onclick="openApp()" class="button">Open in CalSocial</button>
+    <div class="fallback">
+      <p>Unable to automatically open the app. Please click below:</p>
+      <a id="storeLink" class="button" href="#">Open Event</a>
+    </div>
   </div>
 </body>
 </html>

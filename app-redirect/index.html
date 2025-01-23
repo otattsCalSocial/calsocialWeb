@@ -4,52 +4,52 @@
   <meta charset="UTF-8">
   <title>Open Event Details</title>
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', () => {
+      // Extract UID from the URL path
       const uid = window.location.pathname.split('/').pop();
+
       if (!uid) {
-        alert('Error: UID is missing in the URL.');
+        alert('Error: UID is missing in the URL. Unable to open the event.');
         return;
       }
 
-      const deepLink = `calsocial://event/${uid}`;
-      const universalLink = `https://cal.social/event/${uid}`;
+      const deepLink = `calsocial://event/${uid}`; // Custom scheme with UID
+      const universalLink = `https://cal.social/event/${uid}`; // Universal link with UID
       const appStoreURL = 'https://apps.apple.com/app/calsocial/id6738835548';
-      const playStoreURL = 'https://play.google.com/store/apps/details?id=social.cal.calsocial';
+      const playStoreURL = 'https://play.google.com/store/apps/details?id=social.cal.calsocial'; // Ensure package name matches your Android app
 
-      function openApp() {
-        if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-          // Try universal link first
-          window.location.href = universalLink;
-          
-          setTimeout(() => {
-            // If universal link fails, try deep link
-            window.location.href = deepLink;
-            
-            setTimeout(() => {
-              window.location.href = appStoreURL;
-            }, 1000);
-          }, 500);
-        } else if (/Android/i.test(navigator.userAgent)) {
-          const iframe = document.createElement('iframe');
-          iframe.style.display = 'none';
-          document.body.appendChild(iframe);
-          
-          iframe.src = deepLink;
-          
-          setTimeout(() => {
-            document.body.removeChild(iframe);
-            window.location.href = playStoreURL;
-          }, 1000);
-        } else {
-          window.location.href = universalLink;
-        }
+      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+
+      // Function to open the app
+      const openApp = (link) => {
+        window.location.href = link;
+      };
+
+      if (/iPhone|iPad|iPod/i.test(userAgent)) {
+        // Attempt to open the app using the custom scheme
+        openApp(deepLink);
+
+        // Fallback to App Store after a short delay if the app isn't installed
+        setTimeout(() => {
+          window.location.href = appStoreURL;
+        }, 1500);
+      } else if (/Android/i.test(userAgent)) {
+        // Attempt to open the app using the intent URI for better compatibility
+        const intentLink = `intent://event/${uid}#Intent;scheme=calsocial;package=social.cal.calsocial;end;`;
+        openApp(intentLink);
+
+        // Fallback to Play Store after a short delay if the app isn't installed
+        setTimeout(() => {
+          window.location.href = playStoreURL;
+        }, 1500);
+      } else {
+        // For unsupported devices, redirect to the universal link
+        openApp(universalLink);
       }
-
-      openApp();
     });
   </script>
 </head>
 <body>
-  <p>Opening CalSocial...</p>
+  <p>Opening CalSocial to Event Details...</p>
 </body>
 </html>

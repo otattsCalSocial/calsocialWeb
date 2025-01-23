@@ -17,6 +17,33 @@
             text-align: center;
             background-color: #f5f5f5;
         }
+        .banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: #3498db;
+            color: white;
+            padding: 15px;
+            display: none;
+            z-index: 1000;
+        }
+        .banner-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .open-button {
+            background-color: white;
+            color: #3498db;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+        }
         .loader {
             border: 3px solid #f3f3f3;
             border-radius: 50%;
@@ -50,16 +77,46 @@
     </style>
 </head>
 <body>
+    <div class="banner" id="browser-banner">
+        <div class="banner-content">
+            <span>Open in CalSocial</span>
+            <button class="open-button" onclick="openInExternalBrowser()">Open</button>
+        </div>
+    </div>
+    
     <div class="message">Opening Event in CalSocial...</div>
     <div class="loader"></div>
     <div class="fallback" id="fallback">
         <p>Don't have CalSocial installed?</p>
         <a href="#" id="storeLink">Get the App</a>
+        <a href="#" id="openInBrowser" onclick="openInExternalBrowser()">Open in Browser</a>
     </div>
 
     <script>
+        function isInAppBrowser() {
+            const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+            return /FBAN|FBAV|Instagram|Line|Twitter|WhatsApp|WeChat|LinkedIn|Messenger/i.test(userAgent);
+        }
+
+        function openInExternalBrowser() {
+            // Force open in system browser
+            const pathParts = window.location.pathname.split('/');
+            const uid = pathParts[pathParts.length - 1];
+            const universalLink = `https://cal.social/event/${uid}`;
+            
+            // Different approaches for different platforms
+            if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+                // iOS: Open in Safari
+                window.location.href = `x-web-search://?${encodeURIComponent(universalLink)}`;
+            } else if (/Android/.test(navigator.userAgent)) {
+                // Android: Open in default browser
+                window.location.href = `intent://${universalLink.replace(/^https?:\/\//, '')}#Intent;scheme=https;package=com.android.chrome;end`;
+            } else {
+                window.open(universalLink, '_system');
+            }
+        }
+
         function openApp() {
-            // Extract UID from the URL path
             const pathParts = window.location.pathname.split('/');
             const uid = pathParts[pathParts.length - 1];
 
@@ -74,7 +131,6 @@
             const appStoreURL = 'https://apps.apple.com/app/calsocial/id6738835548';
             const playStoreURL = 'https://play.google.com/store/apps/details?id=social.cal.calsocial';
 
-            // Detect platform
             const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
             const isAndroid = /Android/.test(navigator.userAgent);
 
@@ -88,14 +144,23 @@
                 storeLink.href = universalLink;
             }
 
-            // Show fallback after delay
+            // Check if we're in an in-app browser
+            if (isInAppBrowser()) {
+                // Show the banner immediately
+                document.getElementById('browser-banner').style.display = 'block';
+                document.querySelector('.message').textContent = 'Open in CalSocial app';
+                document.querySelector('.loader').style.display = 'none';
+                document.getElementById('fallback').style.display = 'block';
+                return;
+            }
+
+            // Regular deep linking flow
             setTimeout(() => {
                 document.getElementById('fallback').style.display = 'block';
                 document.querySelector('.loader').style.display = 'none';
                 document.querySelector('.message').textContent = 'Unable to open CalSocial';
             }, 1500);
 
-            // Try to open the app without automatic fallback
             if (isIOS) {
                 window.location.href = deepLink;
             } else if (isAndroid) {
@@ -106,7 +171,6 @@
             }
         }
 
-        // Start the process when page loads
         document.addEventListener('DOMContentLoaded', openApp);
     </script>
 </body>

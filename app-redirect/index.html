@@ -4,12 +4,21 @@
   <meta charset="UTF-8">
   <title>Open Event Details</title>
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const eventId = 123; // Replace with dynamic event ID as needed
-      const deepLink = `calsocial://event/${eventId}`; // Custom scheme with path
-      const universalLink = `https://cal.social/event/${eventId}`; // Universal link with path
+    document.addEventListener('DOMContentLoaded', function () {
+      // Extract UID from the URL path
+      const urlPath = window.location.pathname; // e.g., "/event/{uid}"
+      const pathSegments = urlPath.split('/'); // Split by "/"
+      const uid = pathSegments[pathSegments.length - 1]; // UID is the last segment
+
+      if (!uid) {
+        alert('Error: UID is missing in the URL. Unable to open the event.');
+        return;
+      }
+
+      const deepLink = `calsocial://event/${uid}`; // Custom scheme with UID
+      const universalLink = `https://cal.social/event/${uid}`; // Universal link with UID
       const appStoreURL = 'https://apps.apple.com/app/calsocial/id6738835548';
-      const playStoreURL = 'https://play.google.com/store/apps/details?id=social.cal.calsocial'; // Ensure package name is correct
+      const playStoreURL = 'https://play.google.com/store/apps/details?id=social.cal.calsocial'; // Ensure package name matches your Android app
 
       // Determine platform and attempt to open the app
       if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
@@ -17,10 +26,10 @@
         window.location.href = deepLink;
 
         // Fallback to universal link or App Store after a delay
-        setTimeout(function() {
+        setTimeout(function () {
           window.location.href = universalLink;
 
-          setTimeout(function() {
+          setTimeout(function () {
             window.location.href = appStoreURL; // Final fallback
           }, 1000);
         }, 1500);
@@ -29,7 +38,7 @@
         window.location.href = deepLink;
 
         // Fallback to Play Store after a delay
-        setTimeout(function() {
+        setTimeout(function () {
           window.location.href = playStoreURL;
         }, 1500);
       } else {

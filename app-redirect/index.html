@@ -1,127 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Open Event Details - CalSocial</title>
-    <style>
-        /* [Your existing CSS styles remain unchanged] */
-        /* ... */
-    </style>
+  <meta charset="UTF-8">
+  <title>Open CalSocial</title>
+  <script>
+    function openApp() {
+      const deepLink = 'calsocial://open';
+      const appStoreURL = 'https://apps.apple.com/app/calsocial/id6738835548';
+      const playStoreURL = 'https://play.google.com/store/apps/details?id=YOUR_PACKAGE_NAME';
+
+      // Attempt to open the app using an iframe
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      iframe.src = deepLink;
+      document.body.appendChild(iframe);
+
+      // Fallback to App Store/Play Store if the app doesn't open
+      setTimeout(() => {
+        if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+          window.location.href = appStoreURL;
+        } else if (/Android/i.test(navigator.userAgent)) {
+          window.location.href = playStoreURL;
+        }
+      }, 1500);
+    }
+  </script>
 </head>
 <body>
-    <div class="banner" id="browser-banner">
-        <div class="banner-content">
-            <span>Open in CalSocial</span>
-            <button class="open-button" onclick="openInExternalBrowser()">Open</button>
-        </div>
-    </div>
-    
-    <div class="message" id="status-message">Opening Event in CalSocial...</div>
-    <div class="loader" id="loader"></div>
-    <div class="fallback" id="fallback">
-        <p>Don't have CalSocial installed?</p>
-        <a href="#" id="storeLink">Get the App</a>
-        <a href="#" id="openInBrowser" onclick="openInExternalBrowser()">Open in Browser</a>
-        <a href="#" id="supportLink" style="display: none;">Contact Support</a>
-    </div>
-
-    <script>
-        // Separate regex patterns for better maintainability
-        const inAppBrowsers = [
-            /FBAN|FBAV/i,          // Facebook
-            /Instagram/i,          // Instagram
-            /Line/i,               // Line
-            /Twitter/i,            // Twitter
-            /WhatsApp/i,           // WhatsApp
-            /WeChat/i,             // WeChat
-            /LinkedIn/i,           // LinkedIn
-            /Messenger/i,          // Messenger
-            /Snapchat/i,           // Snapchat
-            /Pinterest/i,          // Pinterest
-            /TikTok/i              // TikTok
-        ];
-
-        function isInAppBrowser() {
-            const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-            return inAppBrowsers.some(regex => regex.test(userAgent));
-        }
-
-        function openInExternalBrowser() {
-            const pathParts = window.location.pathname.split('/');
-            const uid = pathParts[pathParts.length - 1];
-            const universalLink = `https://cal.social/event/${uid}`;
-            
-            // Redirect the current window to the universal link
-            window.location.href = universalLink;
-        }
-
-        function openApp() {
-            const pathParts = window.location.pathname.split('/');
-            const uid = pathParts[pathParts.length - 1];
-
-            if (!uid) {
-                document.getElementById('status-message').textContent = 'Error: Event ID is missing';
-                document.getElementById('loader').style.display = 'none';
-                document.getElementById('fallback').style.display = 'block';
-                document.getElementById('supportLink').style.display = 'inline-block';
-                document.getElementById('supportLink').href = 'mailto:support@cal.social';
-                return;
-            }
-
-            const deepLink = `calsocial://event/${uid}`;
-            const universalLink = `https://cal.social/event/${uid}`;
-            const appStoreURL = 'https://apps.apple.com/app/calsocial/id6738835548';
-            const playStoreURL = 'https://play.google.com/store/apps/details?id=social.cal.calsocial';
-
-            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-            const isAndroid = /Android/.test(navigator.userAgent);
-            const storeLink = document.getElementById('storeLink');
-
-            // Set the store link based on the platform
-            if (isIOS) {
-                storeLink.href = appStoreURL;
-            } else if (isAndroid) {
-                storeLink.href = playStoreURL;
-            } else {
-                storeLink.href = universalLink;
-            }
-
-            // If in an in-app browser, show the banner with option to open externally
-            if (isInAppBrowser()) {
-                document.getElementById('browser-banner').style.display = 'block';
-                document.getElementById('status-message').textContent = 'Open in CalSocial app for the best experience';
-                document.getElementById('loader').style.display = 'none';
-                document.getElementById('fallback').style.display = 'block';
-                return;
-            }
-
-            // Listen for visibility change to detect if the app was opened
-            let hidden = false;
-
-            function handleVisibilityChange() {
-                if (document.hidden) {
-                    hidden = true;
-                }
-            }
-
-            document.addEventListener('visibilitychange', handleVisibilityChange);
-
-            // Attempt to open the app using Deep Link
-            window.location.href = deepLink;
-
-            // Fallback after 2 seconds if the app doesn't open
-            setTimeout(() => {
-                document.removeEventListener('visibilitychange', handleVisibilityChange);
-                if (!hidden) {
-                    document.getElementById('loader').style.display = 'none';
-                    document.getElementById('status-message').textContent = 'Unable to open CalSocial';
-                    document.getElementById('fallback').style.display = 'block';
-                }
-            }, 2000);
-        }
-
-        document.addEventListener('DOMContentLoaded', openApp);
-    </script>
+  <p>Open the CalSocial app:</p>
+  <button onclick="openApp()" style="font-size: 18px; padding: 10px; cursor: pointer;">Open App</button>
+  <p>If you don't have the app installed, download it below:</p>
+  <a href="https://apps.apple.com/app/calsocial/id6738835548" target="_blank" style="font-size: 18px;">Download on App Store</a><br>
+  <a href="https://play.google.com/store/apps/details?id=YOUR_PACKAGE_NAME" target="_blank" style="font-size: 18px;">Download on Play Store</a>
 </body>
 </html>

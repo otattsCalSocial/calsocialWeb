@@ -5,7 +5,7 @@
       {
         "appID": "D23N8ZNCJZ.social.cal.calsocial",
         "paths": [
-          "/events/event/*"
+          "/event/*"
         ]
       }
     ]

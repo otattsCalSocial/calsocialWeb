@@ -4,33 +4,26 @@
   <meta charset="UTF-8">
   <title>Open CalSocial</title>
   <script>
-    function openApp() {
-      const deepLink = 'calsocial://open';
+    document.addEventListener('DOMContentLoaded', function() {
+      const universalLink = 'https://cal.social';
       const appStoreURL = 'https://apps.apple.com/app/calsocial/id6738835548';
       const playStoreURL = 'https://play.google.com/store/apps/details?id=YOUR_PACKAGE_NAME';
 
-      // Attempt to open the app using an iframe
-      const iframe = document.createElement('iframe');
-      iframe.style.display = 'none';
-      iframe.src = deepLink;
-      document.body.appendChild(iframe);
+      // Redirect to universal link
+      window.location.href = universalLink;
 
-      // Fallback to App Store/Play Store if the app doesn't open
-      setTimeout(() => {
+      // Fallback to App Store/Play Store if app doesn't open
+      setTimeout(function() {
         if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
           window.location.href = appStoreURL;
         } else if (/Android/i.test(navigator.userAgent)) {
           window.location.href = playStoreURL;
         }
-      }, 1500);
-    }
+      }, 1500); // Adjust delay as needed
+    });
   </script>
 </head>
 <body>
-  <p>Open the CalSocial app:</p>
-  <button onclick="openApp()" style="font-size: 18px; padding: 10px; cursor: pointer;">Open App</button>
-  <p>If you don't have the app installed, download it below:</p>
-  <a href="https://apps.apple.com/app/calsocial/id6738835548" target="_blank" style="font-size: 18px;">Download on App Store</a><br>
-  <a href="https://play.google.com/store/apps/details?id=YOUR_PACKAGE_NAME" target="_blank" style="font-size: 18px;">Download on Play Store</a>
+  <p>Opening CalSocial...</p>
 </body>
 </html>

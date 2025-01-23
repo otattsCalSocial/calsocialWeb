@@ -17,32 +17,36 @@
             text-align: center;
             background-color: #f5f5f5;
         }
-        .banner {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
+        .container {
+            max-width: 600px;
+            width: 100%;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 24px;
             background-color: #3498db;
             color: white;
-            padding: 15px;
-            display: none;
-            z-index: 1000;
-        }
-        .banner-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        .open-button {
-            background-color: white;
-            color: #3498db;
+            text-decoration: none;
+            border-radius: 8px;
+            margin: 10px;
+            font-weight: 600;
             border: none;
-            padding: 8px 16px;
-            border-radius: 5px;
-            font-weight: bold;
             cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .button:hover {
+            background-color: #2980b9;
+        }
+        .button.secondary {
+            background-color: #e0e0e0;
+            color: #333;
+        }
+        .button.secondary:hover {
+            background-color: #d0d0d0;
         }
         .loader {
             border: 3px solid #f3f3f3;
@@ -60,116 +64,138 @@
         .message {
             margin: 20px 0;
             color: #333;
+            font-size: 1.1em;
         }
-        .fallback {
+        .options {
             margin-top: 20px;
-            display: none;
         }
-        .fallback a {
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: #3498db;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            margin: 10px;
+        .divider {
+            margin: 20px 0;
+            border-top: 1px solid #eee;
         }
     </style>
 </head>
 <body>
-    <div class="banner" id="browser-banner">
-        <div class="banner-content">
-            <span>Open in CalSocial</span>
-            <button class="open-button" onclick="openInExternalBrowser()">Open</button>
+    <div class="container">
+        <div class="message" id="message">Opening Event in CalSocial...</div>
+        <div class="loader" id="loader"></div>
+        
+        <div class="options" id="options" style="display: none;">
+            <p>Choose how you'd like to open this event:</p>
+            <button class="button" onclick="handleOpenClick('app')">Open in CalSocial App</button>
+            <button class="button secondary" onclick="handleOpenClick('browser')">Open in Browser</button>
+            
+            <div class="divider"></div>
+            
+            <p>Don't have CalSocial yet?</p>
+            <a class="button" href="" id="storeLink">Get the App</a>
         </div>
-    </div>
-    
-    <div class="message" id="message">Opening Event in CalSocial...</div>
-    <div class="loader" id="loader"></div>
-    <div class="fallback" id="fallback">
-        <p>Don't have CalSocial installed?</p>
-        <a href="https://apps.apple.com/app/calsocial/id6738835548" id="storeLink">Get the App</a>
-        <a href="https://cal.social/event/uid" id="openInBrowser" onclick="openInExternalBrowser()">Open in Browser</a>
     </div>
 
     <script>
-        function isInAppBrowser() {
-            const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-            return /FBAN|FBAV|Instagram|Line|Twitter|WhatsApp|WeChat|LinkedIn|Messenger/i.test(userAgent);
-        }
+        const STATE = {
+            uid: null,
+            platform: null,
+            isInAppBrowser: false
+        };
 
-        function openInExternalBrowser() {
-            const pathParts = window.location.pathname.split('/');
-            const uid = pathParts[pathParts.length - 1];
-            const universalLink = `https://cal.social/event/${uid}`;
+        function detectPlatformAndBrowser() {
+            const ua = navigator.userAgent || navigator.vendor || window.opera;
+            STATE.isInAppBrowser = /FBAN|FBAV|Instagram|Line|Twitter|WhatsApp|WeChat|LinkedIn|Messenger/i.test(ua);
             
-            if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
-                window.location.href = `x-web-search://?${encodeURIComponent(universalLink)}`;
-            } else if (/Android/.test(navigator.userAgent)) {
-                window.location.href = `intent://${universalLink.replace(/^https?:\/\//, '')}#Intent;scheme=https;package=com.android.chrome;end`;
+            if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) {
+                STATE.platform = 'ios';
+            } else if (/Android/.test(ua)) {
+                STATE.platform = 'android';
             } else {
-                window.open(universalLink, '_blank');
+                STATE.platform = 'desktop';
             }
         }
 
-        function openApp() {
+        function getUrls() {
             const pathParts = window.location.pathname.split('/');
-            const uid = pathParts[pathParts.length - 1];
+            STATE.uid = pathParts[pathParts.length - 1];
 
-            if (!uid) {
+            return {
+                deepLink: `calsocial://event/${STATE.uid}`,
+                universalLink: `https://cal.social/event/${STATE.uid}`,
+                appStoreURL: 'https://apps.apple.com/app/calsocial/id6738835548',
+                playStoreURL: 'https://play.google.com/store/apps/details?id=social.cal.calsocial'
+            };
+        }
+
+        function handleOpenClick(target) {
+            const urls = getUrls();
+            
+            if (target === 'app') {
+                if (STATE.platform === 'ios') {
+                    // For iOS in-app browsers, try to open in default browser first
+                    if (STATE.isInAppBrowser) {
+                        window.location.href = `x-web-search://?${encodeURIComponent(urls.universalLink)}`;
+                        setTimeout(() => {
+                            window.location.href = urls.deepLink;
+                        }, 100);
+                    } else {
+                        window.location.href = urls.deepLink;
+                    }
+                } else if (STATE.platform === 'android') {
+                    // For Android in-app browsers, use intent URL
+                    const intentUrl = `intent://event/${STATE.uid}#Intent;scheme=calsocial;package=social.cal.calsocial;S.browser_fallback_url=${encodeURIComponent(urls.universalLink)};end`;
+                    window.location.href = intentUrl;
+                }
+            } else if (target === 'browser') {
+                if (STATE.isInAppBrowser) {
+                    // Open in default browser instead of in-app browser
+                    if (STATE.platform === 'ios') {
+                        window.location.href = `x-web-search://?${encodeURIComponent(urls.universalLink)}`;
+                    } else if (STATE.platform === 'android') {
+                        window.location.href = `intent://${urls.universalLink.replace(/^https?:\/\//, '')}#Intent;scheme=https;package=com.android.chrome;end`;
+                    }
+                } else {
+                    window.location.href = urls.universalLink;
+                }
+            }
+        }
+
+        function initialize() {
+            detectPlatformAndBrowser();
+            const urls = getUrls();
+
+            // Set up store link
+            const storeLink = document.getElementById('storeLink');
+            storeLink.href = STATE.platform === 'ios' ? urls.appStoreURL : 
+                            STATE.platform === 'android' ? urls.playStoreURL : 
+                            urls.universalLink;
+
+            if (!STATE.uid) {
                 document.getElementById('message').textContent = 'Error: Event ID is missing';
                 document.getElementById('loader').style.display = 'none';
                 return;
             }
 
-            const deepLink = `calsocial://event/${uid}`;
-            const universalLink = `https://cal.social/event/${uid}`;
-            const appStoreURL = 'https://apps.apple.com/app/calsocial/id6738835548';
-            const playStoreURL = 'https://play.google.com/store/apps/details?id=social.cal.calsocial';
-
-            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-            const isAndroid = /Android/.test(navigator.userAgent);
-
-            // Set up store link
-            const storeLink = document.getElementById('storeLink');
-            if (isIOS) {
-                storeLink.href = appStoreURL;
-            } else if (isAndroid) {
-                storeLink.href = playStoreURL;
-            } else {
-                storeLink.href = universalLink;
-            }
-
-            // Check if we're in an in-app browser
-            if (isInAppBrowser()) {
-                document.getElementById('browser-banner').style.display = 'block';
-                document.getElementById('message').textContent = 'Open in CalSocial app';
+            // For in-app browsers, show options immediately
+            if (STATE.isInAppBrowser) {
+                document.getElementById('message').textContent = 'Choose how to open this event';
                 document.getElementById('loader').style.display = 'none';
-                document.getElementById('fallback').style.display = 'block';
+                document.getElementById('options').style.display = 'block';
                 return;
             }
 
+            // For regular browsers, try to open app directly
             const timeout = setTimeout(() => {
-                document.getElementById('fallback').style.display = 'block';
+                document.getElementById('options').style.display = 'block';
                 document.getElementById('loader').style.display = 'none';
-                document.getElementById('message').textContent = 'Unable to open CalSocial';
+                document.getElementById('message').textContent = 'Choose how to open this event';
             }, 2000);
 
-            if (isIOS) {
-                window.location.href = deepLink;
-            } else if (isAndroid) {
-                const intentUrl = `intent://event/${uid}#Intent;scheme=calsocial;package=social.cal.calsocial;end`;
-                window.location.href = intentUrl;
-            } else {
-                window.location.href = universalLink;
-            }
+            handleOpenClick('app');
 
-            window.onblur = function () {
+            window.onblur = function() {
                 clearTimeout(timeout);
             };
         }
 
-        document.addEventListener('DOMContentLoaded', openApp);
+        document.addEventListener('DOMContentLoaded', initialize);
     </script>
 </body>
 </html>

@@ -80,7 +80,7 @@
     <div class="banner" id="browser-banner">
         <div class="banner-content">
             <span>Open in CalSocial</span>
-            <button class="open-button" onclick="openInExternalBrowser()">Open</button>
+            <button class="open-button" onclick="openInExternalBrowser(event)">Open</button>
         </div>
     </div>
     
@@ -89,7 +89,7 @@
     <div class="fallback" id="fallback">
         <p>Don't have CalSocial installed?</p>
         <a href="#" id="storeLink">Get the App</a>
-        <a href="#" id="openInBrowser" onclick="openInExternalBrowser()">Open in Browser</a>
+        <a href="#" id="openInBrowser" onclick="openInExternalBrowser(event)">Open in Browser</a>
     </div>
 
     <script>
@@ -98,24 +98,51 @@
             return /FBAN|FBAV|Instagram|Line|Twitter|WhatsApp|WeChat|LinkedIn|Messenger/i.test(userAgent);
         }
 
-        function openInExternalBrowser() {
+        function openInExternalBrowser(event) {
+            // Prevent default behavior
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+
             // Force open in system browser
             const pathParts = window.location.pathname.split('/');
             const uid = pathParts[pathParts.length - 1];
             const universalLink = `https://cal.social/event/${uid}`;
             
-            // Different approaches for different platforms
+            // Create and click a temporary link
+            const link = document.createElement('a');
+            link.href = universalLink;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            
+            // Add special attributes for iOS
             if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
-                // iOS: Try to force Safari
-                window.location.href = universalLink;
-                window.location.replace(universalLink);
-                window.open(universalLink, '_system');
+                link.setAttribute('target', '_system');
+                link.setAttribute('href', universalLink);
             } else if (/Android/.test(navigator.userAgent)) {
-                // Android: Open in default browser
-                window.location.href = `intent://${universalLink.replace(/^https?:\/\//, '')}#Intent;scheme=https;package=com.android.chrome;end`;
-            } else {
-                window.open(universalLink, '_system');
+                // For Android, try both approaches
+                try {
+                    window.open(universalLink, '_system');
+                } catch (e) {
+                    link.href = `intent://${universalLink.replace(/^https?:\/\//, '')}#Intent;scheme=https;package=com.android.chrome;end`;
+                }
             }
+            
+            // Simulate a click
+            document.body.appendChild(link);
+            link.click();
+            
+            // Clean up
+            setTimeout(() => {
+                document.body.removeChild(link);
+                // Fallback for iOS
+                if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+                    window.location.href = universalLink;
+                }
+            }, 100);
+            
+            return false;
         }
 
         function openApp() {

@@ -61,11 +61,21 @@
         display: none;
         margin: 5px;
       }
-      #loadingMessage {
+      /* Spinner Styles */
+      .spinner {
         display: none;
-        margin: 20px 0;
-        color: #555;
-        font-size: 1em;
+        margin: 20px auto;
+        width: 40px;
+        height: 40px;
+        border: 4px solid rgba(0, 0, 0, 0.1);
+        border-left-color: #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
       }
     </style>
   </head>
@@ -88,7 +98,7 @@
         <a id="storeLink" class="button">Get the App</a>
       </div>
 
-      <div id="loadingMessage">Attempting to open CalSocial...</div>
+      <div class="spinner" id="spinner"></div>
     </div>
 
     <script>
@@ -146,8 +156,8 @@
       }
 
       function openInApp() {
-        const loading = document.getElementById("loadingMessage");
-        loading.style.display = "block";
+        const spinner = document.getElementById("spinner");
+        spinner.style.display = "block";
 
         if (STATE.platform === "ios") {
           // Attempt to open the app via deep link
@@ -206,8 +216,9 @@
           document.getElementById("iosInstructions").style.display = "none";
           document.getElementById("regularOptions").style.display = "block";
 
-          // Automatically attempt to open the app for regular browsers
-          openInApp();
+          // Optionally, automatically attempt to open the app for regular browsers
+          // Uncomment the line below if you want to auto-open
+          // openInApp();
         }
       }
 

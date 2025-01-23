@@ -73,23 +73,13 @@
   </head>
   <body>
     <div class="container">
-      <div class="message" id="message">
-        To open this event in CalSocial, you'll need to:
-      </div>
-
+      <div class="message" id="message">Opening CalSocial...</div>
       <div class="error-message" id="errorMessage"></div>
-
-      <div id="iosInstructions">
+      <div id="iosInstructions" style="display: none">
         1. Copy this link:<br />
         <button id="copyButton" onclick="copyToClipboard()">Copy Link</button>
         <span id="copyConfirm">✓ Copied!</span><br /><br />
         2. Open Safari and paste the link
-      </div>
-
-      <div id="regularOptions" style="display: none">
-        <button class="button" onclick="openInApp()">Open in CalSocial</button>
-        <br />
-        <a id="storeLink" class="button">Get the App</a>
       </div>
     </div>
 
@@ -99,7 +89,6 @@
         platform: null,
         isInAppBrowser: false,
         urls: {},
-        appCheckTimeout: 2500,
       };
 
       function detectEnvironment() {
@@ -121,7 +110,6 @@
         STATE.uid = pathParts[pathParts.length - 1];
 
         STATE.urls = {
-          deepLink: `calsocial://event/${STATE.uid}`,
           universalLink: `https://cal.social/event/${STATE.uid}`,
           appStoreURL: "https://apps.apple.com/app/calsocial/id6738835548",
           playStoreURL:
@@ -145,7 +133,6 @@
           }, 2000);
         } catch (err) {
           const linkText = STATE.urls.universalLink;
-          // Create a temporary input element
           const tempInput = document.createElement("input");
           tempInput.value = linkText;
           document.body.appendChild(tempInput);
@@ -166,35 +153,26 @@
         }
       }
 
-      function openInApp() {
-        const now = Date.now();
-
-        if (STATE.platform === "ios") {
-          // For iOS, try deep link first
-          window.location.href = STATE.urls.deepLink;
-
-          // Only redirect to app store in normal browsers
-          if (!STATE.isInAppBrowser) {
-            setTimeout(() => {
-              // Check if enough time has passed (user didn't have app installed)
-              if (Date.now() - now > STATE.appCheckTimeout - 100) {
-                window.location.href = STATE.urls.appStoreURL;
-              }
-            }, STATE.appCheckTimeout);
-          }
-        } else if (STATE.platform === "android") {
-          // Use Android intent URL with fallback
-          const intentUrl = `intent://event/${
-            STATE.uid
-          }#Intent;scheme=calsocial;package=social.cal.calsocial;S.browser_fallback_url=${encodeURIComponent(
-            STATE.isInAppBrowser
-              ? STATE.urls.universalLink
-              : STATE.urls.playStoreURL
-          )};end`;
-          window.location.href = intentUrl;
+      function handleIOS() {
+        if (STATE.isInAppBrowser) {
+          // In iOS in-app browsers, show copy instructions
+          document.getElementById("message").textContent =
+            "To open this event in CalSocial, you'll need to:";
+          document.getElementById("iosInstructions").style.display = "block";
         } else {
-          window.location.href = STATE.urls.universalLink;
+          // In Safari/Chrome, redirect to App Store
+          window.location.href = STATE.urls.appStoreURL;
         }
+      }
+
+      function handleAndroid() {
+        // For Android, use intent URL with store fallback
+        const intentUrl = `intent://event/${
+          STATE.uid
+        }#Intent;scheme=calsocial;package=social.cal.calsocial;S.browser_fallback_url=${encodeURIComponent(
+          STATE.urls.playStoreURL
+        )};end`;
+        window.location.href = intentUrl;
       }
 
       function initialize() {
@@ -205,22 +183,14 @@
           return;
         }
 
-        const storeLink = document.getElementById("storeLink");
-        storeLink.href =
-          STATE.platform === "ios"
-            ? STATE.urls.appStoreURL
-            : STATE.platform === "android"
-            ? STATE.urls.playStoreURL
-            : STATE.urls.universalLink;
-
-        // For iOS in-app browsers, show copy link instructions
-        if (STATE.platform === "ios" && STATE.isInAppBrowser) {
-          document.getElementById("iosInstructions").style.display = "block";
-          document.getElementById("regularOptions").style.display = "none";
+        // Handle platform-specific logic
+        if (STATE.platform === "ios") {
+          handleIOS();
+        } else if (STATE.platform === "android") {
+          handleAndroid();
         } else {
-          document.getElementById("iosInstructions").style.display = "none";
-          document.getElementById("regularOptions").style.display = "block";
-          openInApp();
+          // Desktop browsers go to web version
+          window.location.href = STATE.urls.universalLink;
         }
       }
 

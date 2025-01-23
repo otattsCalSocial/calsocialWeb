@@ -80,7 +80,7 @@
     <div class="banner" id="browser-banner">
         <div class="banner-content">
             <span>Open in CalSocial</span>
-            <button class="open-button" onclick="openInExternalBrowser()">Open</button>
+            <button class="open-button" onclick="handleExternalOpen()">Open</button>
         </div>
     </div>
     
@@ -89,28 +89,36 @@
     <div class="fallback" id="fallback">
         <p>Don't have CalSocial installed?</p>
         <a href="#" id="storeLink">Get the App</a>
-        <a href="#" id="openInBrowser" onclick="openInExternalBrowser()">Open in Browser</a>
+        <a href="#" id="openInBrowser" onclick="handleExternalOpen()">Open in Browser</a>
     </div>
 
     <script>
+        // Get event ID from URL
+        function getEventId() {
+            const pathParts = window.location.pathname.split('/');
+            return pathParts[pathParts.length - 1];
+        }
+
         function isInAppBrowser() {
             const userAgent = navigator.userAgent || navigator.vendor || window.opera;
             return /FBAN|FBAV|Instagram|Line|Twitter|WhatsApp|WeChat|LinkedIn|Messenger/i.test(userAgent);
         }
 
-        function openInExternalBrowser() {
-            const pathParts = window.location.pathname.split('/');
-            const uid = pathParts[pathParts.length - 1];
+        function handleExternalOpen() {
+            const uid = getEventId();
             const universalLink = `https://cal.social/event/${uid}`;
-
-            // For iOS and Android fallback to universal link
-            window.location.href = universalLink;
+            
+            // Open in new tab/window to break out of in-app browsers
+            window.open(universalLink, '_blank');
+            
+            // Fallback for browsers that block window.open
+            setTimeout(() => {
+                window.location.href = universalLink;
+            }, 100);
         }
 
-
         function openApp() {
-            const pathParts = window.location.pathname.split('/');
-            const uid = pathParts[pathParts.length - 1];
+            const uid = getEventId();
 
             if (!uid) {
                 document.querySelector('.message').textContent = 'Error: Event ID is missing';
@@ -138,7 +146,6 @@
 
             // Check if we're in an in-app browser
             if (isInAppBrowser()) {
-                // Show the banner immediately
                 document.getElementById('browser-banner').style.display = 'block';
                 document.querySelector('.message').textContent = 'Open in CalSocial app';
                 document.querySelector('.loader').style.display = 'none';
@@ -147,12 +154,13 @@
             }
 
             // Regular deep linking flow
-            setTimeout(() => {
+            const fallbackTimer = setTimeout(() => {
                 document.getElementById('fallback').style.display = 'block';
                 document.querySelector('.loader').style.display = 'none';
                 document.querySelector('.message').textContent = 'Unable to open CalSocial';
             }, 1500);
 
+            // Try to open the app
             if (isIOS) {
                 window.location.href = deepLink;
             } else if (isAndroid) {

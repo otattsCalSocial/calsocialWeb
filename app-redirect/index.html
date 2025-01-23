@@ -3,83 +3,53 @@
 <head>
   <meta charset="UTF-8">
   <title>Open Event Details</title>
-  <style>
-    .button {
-      background: #007AFF;
-      color: white;
-      padding: 16px 32px;
-      border-radius: 8px;
-      border: none;
-      font-size: 18px;
-      cursor: pointer;
-      margin: 20px;
-    }
-    .container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      flex-direction: column;
-    }
-    .fallback {
-      display: none;
-      text-align: center;
-    }
-  </style>
   <script>
-    function detectBrowserAndRedirect() {
+    document.addEventListener('DOMContentLoaded', () => {
+      // Extract UID from the URL path
       const uid = window.location.pathname.split('/').pop();
-      const deepLink = `calsocial://event/${uid}`;
-      const universalLink = `https://cal.social/event/${uid}`;
+
+      if (!uid) {
+        alert('Error: UID is missing in the URL. Unable to open the event.');
+        return;
+      }
+
+      const deepLink = `calsocial://event/${uid}`; // Custom scheme with UID
+      const universalLink = `https://cal.social/event/${uid}`; // Universal link with UID
       const appStoreURL = 'https://apps.apple.com/app/calsocial/id6738835548';
-      const playStoreURL = 'https://play.google.com/store/apps/details?id=social.cal.calsocial';
+      const playStoreURL = 'https://play.google.com/store/apps/details?id=social.cal.calsocial'; // Ensure package name matches your Android app
 
       const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-      const isIOS = /iPhone|iPad|iPod/i.test(userAgent);
-      const isAndroid = /Android/i.test(userAgent);
 
-      if (isIOS) {
-        // iOS: Universal Link preferred, fallback to custom scheme
-        window.location.href = universalLink;
+      // Function to open the app
+      const openApp = (link) => {
+        window.location.href = link;
+      };
+
+      if (/iPhone|iPad|iPod/i.test(userAgent)) {
+        // Attempt to open the app using the custom scheme
+        openApp(deepLink);
+
+        // Fallback to App Store after a short delay if the app isn't installed
         setTimeout(() => {
-          window.location.href = deepLink;
-          setTimeout(() => {
-            if (!document.hidden) {
-              document.querySelector('.fallback').style.display = 'block';
-              document.querySelector('#storeLink').setAttribute('href', appStoreURL);
-            }
-          }, 2000);
-        }, 500);
-      } else if (isAndroid) {
-        // Android: Intent preferred, fallback to custom scheme
-        const intentUrl = `intent://event/${uid}#Intent;scheme=calsocial;package=social.cal.calsocial;end`;
-        window.location.href = intentUrl;
+          window.location.href = appStoreURL;
+        }, 1500);
+      } else if (/Android/i.test(userAgent)) {
+        // Attempt to open the app using the intent URI for better compatibility
+        const intentLink = `intent://event/${uid}#Intent;scheme=calsocial;package=social.cal.calsocial;end;`;
+        openApp(intentLink);
+
+        // Fallback to Play Store after a short delay if the app isn't installed
         setTimeout(() => {
-          window.location.href = deepLink;
-          setTimeout(() => {
-            if (!document.hidden) {
-              document.querySelector('.fallback').style.display = 'block';
-              document.querySelector('#storeLink').setAttribute('href', playStoreURL);
-            }
-          }, 2000);
-        }, 500);
+          window.location.href = playStoreURL;
+        }, 1500);
       } else {
-        // Desktop or unsupported: Show button to manually open the link
-        document.querySelector('.fallback').style.display = 'block';
-        document.querySelector('#storeLink').setAttribute('href', universalLink);
+        // For unsupported devices, redirect to the universal link
+        openApp(universalLink);
       }
-    }
-
-    // Trigger the logic on page load
-    window.onload = detectBrowserAndRedirect;
+    });
   </script>
 </head>
 <body>
-  <div class="container">
-    <div class="fallback">
-      <p>Unable to automatically open the app. Please click below:</p>
-      <a id="storeLink" class="button" href="#">Open Event</a>
-    </div>
-  </div>
+  <p>Opening CalSocial to Event Details...</p>
 </body>
 </html>

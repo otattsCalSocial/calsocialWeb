@@ -16,44 +16,30 @@
       const deepLink = `calsocial://event/${uid}`; // Custom scheme with UID
       const universalLink = `https://cal.social/event/${uid}`; // Universal link with UID
       const appStoreURL = 'https://apps.apple.com/app/calsocial/id6738835548';
-      const playStoreURL = 'https://play.google.com/store/apps/details?id=social.cal.calsocial';
+      const playStoreURL = 'https://play.google.com/store/apps/details?id=social.cal.calsocial'; // Ensure package name matches your Android app
 
       const userAgent = navigator.userAgent || navigator.vendor || window.opera;
 
-      // Function to open the app using iframe to reduce redirection issues
-      const openApp = (link) => {
-        const iframe = document.createElement('iframe');
-        iframe.style.display = 'none';
-        iframe.src = link;
-        document.body.appendChild(iframe);
-
-        // Clean up the iframe after use
-        setTimeout(() => {
-          document.body.removeChild(iframe);
-        }, 1000);
-      };
-
-      // Attempt to open the app based on the platform
       if (/iPhone|iPad|iPod/i.test(userAgent)) {
-        // Try to open the app using the deep link
+        // Attempt to open the app using the custom scheme
         openApp(deepLink);
 
-        // Fallback to the App Store after a short delay
+        // Fallback to App Store after a short delay if the app isn't installed
         setTimeout(() => {
           window.location.href = appStoreURL;
         }, 1500);
       } else if (/Android/i.test(userAgent)) {
-        // Try to open the app using the intent link
+        // Attempt to open the app using the intent URI for better compatibility
         const intentLink = `intent://event/${uid}#Intent;scheme=calsocial;package=social.cal.calsocial;end;`;
         openApp(intentLink);
 
-        // Fallback to the Play Store after a short delay
+        // Fallback to Play Store after a short delay if the app isn't installed
         setTimeout(() => {
           window.location.href = playStoreURL;
         }, 1500);
       } else {
-        // Unsupported devices: redirect to the universal link
-        window.location.href = universalLink;
+        // For unsupported devices, redirect to the universal link
+        openApp(universalLink);
       }
     });
   </script>

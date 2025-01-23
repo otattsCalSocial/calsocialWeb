@@ -61,6 +61,12 @@
         display: none;
         margin: 5px;
       }
+      #loadingMessage {
+        display: none;
+        margin: 20px 0;
+        color: #555;
+        font-size: 1em;
+      }
     </style>
   </head>
   <body>
@@ -69,7 +75,7 @@
         To open this event in CalSocial, you'll need to:
       </div>
 
-      <div id="iosInstructions">
+      <div id="iosInstructions" style="display: none">
         1. Copy this link:<br />
         <button id="copyButton" onclick="copyToClipboard()">Copy Link</button>
         <span id="copyConfirm">✓ Copied!</span><br /><br />
@@ -81,6 +87,8 @@
         <br />
         <a id="storeLink" class="button">Get the App</a>
       </div>
+
+      <div id="loadingMessage">Attempting to open CalSocial...</div>
     </div>
 
     <script>
@@ -132,19 +140,35 @@
       }
 
       function openInApp() {
+        const loading = document.getElementById("loadingMessage");
+        loading.style.display = "block";
+
         if (STATE.platform === "ios") {
+          // Attempt to open the app via deep link
           window.location.href = STATE.urls.deepLink;
+
+          // If the app is not installed, redirect to App Store after timeout
           setTimeout(() => {
-            window.location.href = STATE.urls.universalLink;
+            // Check if the page is still visible (app not opened)
+            if (!document.hidden) {
+              window.location.href = STATE.urls.appStoreURL;
+            }
           }, 2500);
         } else if (STATE.platform === "android") {
-          const intentUrl = `intent://event/${
-            STATE.uid
-          }#Intent;scheme=calsocial;package=social.cal.calsocial;S.browser_fallback_url=${encodeURIComponent(
-            STATE.urls.universalLink
-          )};end`;
-          window.location.href = intentUrl;
+          // Attempt to open the app via intent
+          const now = Date.now();
+          const iframe = document.createElement("iframe");
+          iframe.style.display = "none";
+          iframe.src = STATE.urls.deepLink;
+          document.body.appendChild(iframe);
+
+          setTimeout(() => {
+            if (Date.now() - now < 2000) {
+              window.location.href = STATE.urls.playStoreURL;
+            }
+          }, 1500);
         } else {
+          // For desktop or other platforms, redirect to universal link or show instructions
           window.location.href = STATE.urls.universalLink;
         }
       }
@@ -166,14 +190,16 @@
             ? STATE.urls.playStoreURL
             : STATE.urls.universalLink;
 
-        // For iOS in-app browsers, show copy link instructionss
+        // For iOS in-app browsers, show copy link instructions
         if (STATE.platform === "ios" && STATE.isInAppBrowser) {
           document.getElementById("iosInstructions").style.display = "block";
           document.getElementById("regularOptions").style.display = "none";
         } else {
           document.getElementById("iosInstructions").style.display = "none";
           document.getElementById("regularOptions").style.display = "block";
-          openInApp();
+          // Optionally, you can automatically attempt to open the app
+          // Uncomment the line below if you want to auto-open
+          // openInApp();
         }
       }
 

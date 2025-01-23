@@ -69,7 +69,7 @@
         To open this event in CalSocial, you'll need to:
       </div>
 
-      <div id="iosInstructions" style="display: none">
+      <div id="iosInstructions">
         1. Copy this link:<br />
         <button id="copyButton" onclick="copyToClipboard()">Copy Link</button>
         <span id="copyConfirm">✓ Copied!</span><br /><br />
@@ -89,7 +89,6 @@
         platform: null,
         isInAppBrowser: false,
         urls: {},
-        redirectAttempted: false,
       };
 
       function detectEnvironment() {
@@ -133,33 +132,19 @@
       }
 
       function openInApp() {
-        if (STATE.redirectAttempted) {
-          return; // Prevent multiple attempts
-        }
-
-        STATE.redirectAttempted = true;
-
         if (STATE.platform === "ios") {
-          // For iOS, attempt to open the app and fallback to App Store
-          const now = Date.now();
           window.location.href = STATE.urls.deepLink;
-
           setTimeout(() => {
-            // If the app wasn't opened, redirect to App Store
-            if (Date.now() - now < 2000) {
-              window.location.href = STATE.urls.appStoreURL;
-            }
-          }, 1500);
+            window.location.href = STATE.urls.universalLink;
+          }, 2500);
         } else if (STATE.platform === "android") {
-          // For Android, use intent to open the app with fallback to Play Store
           const intentUrl = `intent://event/${
             STATE.uid
           }#Intent;scheme=calsocial;package=social.cal.calsocial;S.browser_fallback_url=${encodeURIComponent(
-            STATE.urls.playStoreURL
+            STATE.urls.universalLink
           )};end`;
           window.location.href = intentUrl;
         } else {
-          // For desktop, just open the universal link
           window.location.href = STATE.urls.universalLink;
         }
       }
@@ -181,22 +166,14 @@
             ? STATE.urls.playStoreURL
             : STATE.urls.universalLink;
 
-        // Prevent multiple redirect attempts using sessionStorage
-        if (sessionStorage.getItem("redirectAttempted")) {
-          STATE.redirectAttempted = true;
-        }
-
-        // For iOS in-app browsers, show copy link instructions
+        // For iOS in-app browsers, show copy link instructionss
         if (STATE.platform === "ios" && STATE.isInAppBrowser) {
           document.getElementById("iosInstructions").style.display = "block";
           document.getElementById("regularOptions").style.display = "none";
         } else {
           document.getElementById("iosInstructions").style.display = "none";
           document.getElementById("regularOptions").style.display = "block";
-          if (!STATE.redirectAttempted) {
-            openInApp();
-            sessionStorage.setItem("redirectAttempted", "true");
-          }
+          openInApp();
         }
       }
 

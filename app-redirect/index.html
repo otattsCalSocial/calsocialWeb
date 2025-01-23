@@ -1,50 +1,130 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Open Event Details</title>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      // Extract UID from the URL path
-      const uid = window.location.pathname.split('/').pop();
-
-      if (!uid) {
-        alert('Error: UID is missing in the URL. Unable to open the event.');
-        return;
-      }
-
-      const deepLink = `calsocial://event/${uid}`; // Custom scheme with UID
-      const universalLink = `https://cal.social/event/${uid}`; // Universal link with UID
-      const appStoreURL = 'https://apps.apple.com/app/calsocial/id6738835548';
-      const playStoreURL = 'https://play.google.com/store/apps/details?id=social.cal.calsocial'; // Ensure package name matches your Android app
-
-      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-
-      if (/iPhone|iPad|iPod/i.test(userAgent)) {
-        // Attempt to open the app using the custom scheme
-        openApp(deepLink);
-
-        // Fallback to App Store after a short delay if the app isn't installed
-        setTimeout(() => {
-          window.location.href = appStoreURL;
-        }, 1500);
-      } else if (/Android/i.test(userAgent)) {
-        // Attempt to open the app using the intent URI for better compatibility
-        const intentLink = `intent://event/${uid}#Intent;scheme=calsocial;package=social.cal.calsocial;end;`;
-        openApp(intentLink);
-
-        // Fallback to Play Store after a short delay if the app isn't installed
-        setTimeout(() => {
-          window.location.href = playStoreURL;
-        }, 1500);
-      } else {
-        // For unsupported devices, redirect to the universal link
-        openApp(universalLink);
-      }
-    });
-  </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Open Event Details - CalSocial</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+            background-color: #f5f5f5;
+        }
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 3px solid #3498db;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .message {
+            margin: 20px 0;
+            color: #333;
+        }
+        .fallback {
+            margin-top: 20px;
+            display: none;
+        }
+        .fallback a {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 10px;
+        }
+    </style>
 </head>
 <body>
-  <p>Opening CalSocial to Event Details...</p>
+    <div class="message">Opening Event in CalSocial...</div>
+    <div class="loader"></div>
+    <div class="fallback" id="fallback">
+        <p>Don't have CalSocial installed?</p>
+        <a href="#" id="storeLink">Get the App</a>
+    </div>
+
+    <script>
+        function openApp() {
+            // Extract UID from the URL path
+            const pathParts = window.location.pathname.split('/');
+            const uid = pathParts[pathParts.length - 1];
+
+            if (!uid) {
+                document.querySelector('.message').textContent = 'Error: Event ID is missing';
+                document.querySelector('.loader').style.display = 'none';
+                return;
+            }
+
+            const deepLink = `calsocial://event/${uid}`;
+            const universalLink = `https://cal.social/event/${uid}`;
+            const appStoreURL = 'https://apps.apple.com/app/calsocial/id6738835548';
+            const playStoreURL = 'https://play.google.com/store/apps/details?id=social.cal.calsocial';
+
+            // Detect platform
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            const isAndroid = /Android/.test(navigator.userAgent);
+
+            // Set up store link
+            const storeLink = document.getElementById('storeLink');
+            if (isIOS) {
+                storeLink.href = appStoreURL;
+            } else if (isAndroid) {
+                storeLink.href = playStoreURL;
+            } else {
+                storeLink.href = universalLink;
+            }
+
+            // Show fallback after delay
+            setTimeout(() => {
+                document.getElementById('fallback').style.display = 'block';
+            }, 1500);
+
+            // Try to open the app
+            if (isIOS) {
+                // iOS deep linking
+                window.location.href = deepLink;
+                
+                // Fallback for iOS
+                setTimeout(() => {
+                    if (document.hidden) {
+                        return; // App was opened successfully
+                    }
+                    window.location.href = appStoreURL;
+                }, 2000);
+            } else if (isAndroid) {
+                // Android intent
+                const intentUrl = `intent://event/${uid}#Intent;scheme=calsocial;package=social.cal.calsocial;end`;
+                window.location.href = intentUrl;
+                
+                // Fallback for Android
+                setTimeout(() => {
+                    if (document.hidden) {
+                        return; // App was opened successfully
+                    }
+                    window.location.href = playStoreURL;
+                }, 2000);
+            } else {
+                // Desktop or unsupported device
+                window.location.href = universalLink;
+            }
+        }
+
+        // Start the process when page loads
+        document.addEventListener('DOMContentLoaded', openApp);
+    </script>
 </body>
 </html>

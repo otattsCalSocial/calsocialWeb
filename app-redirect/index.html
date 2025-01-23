@@ -2,13 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Add Event</title>
+  <title>Open Event Details</title>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      const deepLink = 'calsocial://'; // Custom scheme to open the app
-      const universalLink = 'https://cal.social'; // Universal link as a fallback
+      const eventId = 123; // Replace with dynamic event ID as needed
+      const deepLink = `calsocial://event/${eventId}`; // Custom scheme with path
+      const universalLink = `https://cal.social/event/${eventId}`; // Universal link with path
       const appStoreURL = 'https://apps.apple.com/app/calsocial/id6738835548';
-      const playStoreURL = 'https://play.google.com/store/apps/details?id=YOUR_PACKAGE_NAME';
+      const playStoreURL = 'https://play.google.com/store/apps/details?id=social.cal.calsocial'; // Ensure package name is correct
 
       // Determine platform and attempt to open the app
       if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
@@ -39,6 +40,6 @@
   </script>
 </head>
 <body>
-  <p>Opening CalSocial.....</p>
+  <p>Opening CalSocial to Event Details...</p>
 </body>
 </html>

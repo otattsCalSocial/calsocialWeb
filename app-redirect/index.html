@@ -1,39 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Add Event</title>
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        const deepLink = "calsocial://"; // Custom scheme to open the app
-        const universalLink = "https://cal.social"; // Universal link as a fallback
-        const appStoreURL = "https://apps.apple.com/app/calsocial/id6738835548";
-        const playStoreURL =
-          "https://play.google.com/store/apps/details?id=YOUR_PACKAGE_NAME";
+<head>
+  <meta charset="UTF-8">
+  <title>Add Event</title>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const deepLink = 'calsocial://'; // Custom scheme to open the app
+      const universalLink = 'https://cal.social'; // Universal link as a fallback
+      const appStoreURL = 'https://apps.apple.com/app/calsocial/id6738835548';
+      const playStoreURL = 'https://play.google.com/store/apps/details?id=YOUR_PACKAGE_NAME';
 
-        // Determine platform and attempt to open the app
-        if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-          // Try to open the app using the custom scheme
-          window.location.href = deepLink;
+      // Determine platform and attempt to open the app
+      if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        // Try to open the app using the custom scheme
+        window.location.href = deepLink;
 
-          // Fallback to universal link or App Store after a delay
-          setTimeout(function () {
-            window.location.href = universalLink;
-
-            setTimeout(function () {
-              window.location.href = appStoreURL; // Final fallback
-            }, 1000);
-          }, 1500);
-        } else if (/Android/i.test(navigator.userAgent)) {
-          // Try to open the app using the custom scheme
-          window.location.href = deepLink;
-
-          // Fallback to Play Store after a delay
-          setTimeout(function () {
-            window.location.href = playStoreURL;
-          }, 1500);
-        } else {
-          // For unsupported devices, redirect to the website
+        // Fallback to universal link or App Store after a delay
+        setTimeout(function() {
           window.location.href = universalLink;
 
           setTimeout(function() {

@@ -59,7 +59,6 @@
 
     <script>
         function openApp() {
-            //THIS ONE
             // Extract UID from the URL path
             const pathParts = window.location.pathname.split('/');
             const uid = pathParts[pathParts.length - 1];
@@ -92,34 +91,17 @@
             // Show fallback after delay
             setTimeout(() => {
                 document.getElementById('fallback').style.display = 'block';
+                document.querySelector('.loader').style.display = 'none';
+                document.querySelector('.message').textContent = 'Unable to open CalSocial';
             }, 1500);
 
-            // Try to open the app
+            // Try to open the app without automatic fallback
             if (isIOS) {
-                // iOS deep linking
                 window.location.href = deepLink;
-                
-                // Fallback for iOS
-                setTimeout(() => {
-                    if (document.hidden) {
-                        return; // App was opened successfully
-                    }
-                    window.location.href = appStoreURL;
-                }, 2000);
             } else if (isAndroid) {
-                // Android intent
                 const intentUrl = `intent://event/${uid}#Intent;scheme=calsocial;package=social.cal.calsocial;end`;
                 window.location.href = intentUrl;
-                
-                // Fallback for Android
-                setTimeout(() => {
-                    if (document.hidden) {
-                        return; // App was opened successfully
-                    }
-                    window.location.href = playStoreURL;
-                }, 2000);
             } else {
-                // Desktop or unsupported device
                 window.location.href = universalLink;
             }
         }

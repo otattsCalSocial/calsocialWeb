@@ -106,8 +106,10 @@
             
             // Different approaches for different platforms
             if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
-                // iOS: Open in Safari
-                window.location.href = `x-web-search://?${encodeURIComponent(universalLink)}`;
+                // iOS: Try to force Safari
+                window.location.href = universalLink;
+                window.location.replace(universalLink);
+                window.open(universalLink, '_system');
             } else if (/Android/.test(navigator.userAgent)) {
                 // Android: Open in default browser
                 window.location.href = `intent://${universalLink.replace(/^https?:\/\//, '')}#Intent;scheme=https;package=com.android.chrome;end`;

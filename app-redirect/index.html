@@ -61,6 +61,14 @@
         display: none;
         margin: 5px;
       }
+      .error-message {
+        color: #e74c3c;
+        margin: 10px 0;
+        padding: 10px;
+        border-radius: 4px;
+        background-color: #fdf0ef;
+        display: none;
+      }
     </style>
   </head>
   <body>
@@ -68,6 +76,8 @@
       <div class="message" id="message">
         To open this event in CalSocial, you'll need to:
       </div>
+
+      <div class="error-message" id="errorMessage"></div>
 
       <div id="iosInstructions">
         1. Copy this link:<br />
@@ -89,6 +99,7 @@
         platform: null,
         isInAppBrowser: false,
         urls: {},
+        appCheckTimeout: 2500,
       };
 
       function detectEnvironment() {
@@ -118,6 +129,12 @@
         };
       }
 
+      function showError(message) {
+        const errorElement = document.getElementById("errorMessage");
+        errorElement.textContent = message;
+        errorElement.style.display = "block";
+      }
+
       async function copyToClipboard() {
         try {
           await navigator.clipboard.writeText(STATE.urls.universalLink);
@@ -127,21 +144,52 @@
             confirm.style.display = "none";
           }, 2000);
         } catch (err) {
-          alert("Please copy this link manually: " + STATE.urls.universalLink);
+          const linkText = STATE.urls.universalLink;
+          // Create a temporary input element
+          const tempInput = document.createElement("input");
+          tempInput.value = linkText;
+          document.body.appendChild(tempInput);
+          tempInput.select();
+
+          try {
+            document.execCommand("copy");
+            const confirm = document.getElementById("copyConfirm");
+            confirm.style.display = "inline";
+            setTimeout(() => {
+              confirm.style.display = "none";
+            }, 2000);
+          } catch (err) {
+            showError(`Please copy this link manually: ${linkText}`);
+          }
+
+          document.body.removeChild(tempInput);
         }
       }
 
       function openInApp() {
+        const now = Date.now();
+
         if (STATE.platform === "ios") {
+          // For iOS, try deep link first
           window.location.href = STATE.urls.deepLink;
-          setTimeout(() => {
-            window.location.href = STATE.urls.universalLink;
-          }, 2500);
+
+          // Only redirect to app store in normal browsers
+          if (!STATE.isInAppBrowser) {
+            setTimeout(() => {
+              // Check if enough time has passed (user didn't have app installed)
+              if (Date.now() - now > STATE.appCheckTimeout - 100) {
+                window.location.href = STATE.urls.appStoreURL;
+              }
+            }, STATE.appCheckTimeout);
+          }
         } else if (STATE.platform === "android") {
+          // Use Android intent URL with fallback
           const intentUrl = `intent://event/${
             STATE.uid
           }#Intent;scheme=calsocial;package=social.cal.calsocial;S.browser_fallback_url=${encodeURIComponent(
-            STATE.urls.universalLink
+            STATE.isInAppBrowser
+              ? STATE.urls.universalLink
+              : STATE.urls.playStoreURL
           )};end`;
           window.location.href = intentUrl;
         } else {
@@ -153,8 +201,7 @@
         detectEnvironment();
 
         if (!STATE.uid) {
-          document.getElementById("message").textContent =
-            "Error: Event ID is missing";
+          showError("Error: Event ID is missing");
           return;
         }
 
@@ -166,7 +213,7 @@
             ? STATE.urls.playStoreURL
             : STATE.urls.universalLink;
 
-        // For iOS in-app browsers, show copy link instructionss
+        // For iOS in-app browsers, show copy link instructions
         if (STATE.platform === "ios" && STATE.isInAppBrowser) {
           document.getElementById("iosInstructions").style.display = "block";
           document.getElementById("regularOptions").style.display = "none";

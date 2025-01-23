@@ -104,10 +104,14 @@
             const uid = pathParts[pathParts.length - 1];
             const universalLink = `https://cal.social/event/${uid}`;
             
-            // Different approaches for different platforms
             if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
-                // iOS: Open in Safari
-                window.location.href = `x-web-search://?${encodeURIComponent(universalLink)}`;
+                // iOS: Try to open in system browser
+                window.open(universalLink, '_system');
+                
+                // Fallback in case window.open doesn't work
+                setTimeout(() => {
+                    window.location.href = universalLink;
+                }, 100);
             } else if (/Android/.test(navigator.userAgent)) {
                 // Android: Open in default browser
                 window.location.href = `intent://${universalLink.replace(/^https?:\/\//, '')}#Intent;scheme=https;package=com.android.chrome;end`;

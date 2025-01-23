@@ -30,11 +30,57 @@
       const appStoreURL = 'https://apps.apple.com/app/calsocial/id6738835548';
       const playStoreURL = 'https://play.google.com/store/apps/details?id=social.cal.calsocial';
 
+      // Get the current time before trying to open the app
+      const startTime = Date.now();
+
+      // Handle visibility change
+      document.addEventListener('visibilitychange', function() {
+        if (document.hidden && Date.now() - startTime < 3000) {
+          // App was successfully opened
+          return;
+        }
+      });
+
       if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-        window.location.href = universalLink;
+        // For iOS: Try both Universal Link and custom URL scheme
+        // First create and click a hidden anchor with universal link
+        const universalLinkEl = document.createElement('a');
+        universalLinkEl.setAttribute('href', universalLink);
+        universalLinkEl.style.display = 'none';
+        document.body.appendChild(universalLinkEl);
+        universalLinkEl.click();
+        
+        // Then try the custom scheme after a short delay
+        setTimeout(() => {
+          window.location.href = deepLink;
+          
+          // If neither worked after 2 seconds, go to App Store
+          setTimeout(() => {
+            if (!document.hidden) {
+              window.location.href = appStoreURL;
+            }
+          }, 2000);
+        }, 100);
       } else if (/Android/i.test(navigator.userAgent)) {
-        window.location.href = deepLink;
+        // For Android: Try Intent URL first
+        const intentUrl = `intent://event/${uid}#Intent;scheme=calsocial;package=social.cal.calsocial;end`;
+        window.location.href = intentUrl;
+        
+        // Fallback to custom scheme
+        setTimeout(() => {
+          if (!document.hidden) {
+            window.location.href = deepLink;
+            
+            // If still here after 2 seconds, go to Play Store
+            setTimeout(() => {
+              if (!document.hidden) {
+                window.location.href = playStoreURL;
+              }
+            }, 2000);
+          }
+        }, 100);
       } else {
+        // For desktop: Open universal link
         window.location.href = universalLink;
       }
     }

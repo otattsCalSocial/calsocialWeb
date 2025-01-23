@@ -5,45 +5,51 @@
   <title>Open Event Details</title>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // Extract UID from the URL path
       const uid = window.location.pathname.split('/').pop();
-
+  
       if (!uid) {
         alert('Error: UID is missing in the URL. Unable to open the event.');
         return;
       }
-
-      const deepLink = `calsocial://event/${uid}`; // Custom scheme with UID
-      const universalLink = `https://cal.social/event/${uid}`; // Universal link with UID
+  
+      const deepLink = `calsocial://event/${uid}`;
+      const universalLink = `https://cal.social/event/${uid}`;
       const appStoreURL = 'https://apps.apple.com/app/calsocial/id6738835548';
-      const playStoreURL = 'https://play.google.com/store/apps/details?id=social.cal.calsocial'; // Ensure package name matches your Android app
-
-      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-
-      // Function to open the app
-      const openApp = (link) => {
-        window.location.href = link;
+      const playStoreURL = 'https://play.google.com/store/apps/details?id=social.cal.calsocial';
+  
+      const isInAppBrowser = () => {
+        const ua = navigator.userAgent || navigator.vendor || window.opera;
+        return /FBAN|FBAV|Instagram|Messenger/i.test(ua);
       };
-
+  
+      const openApp = (link) => {
+        const win = window.open(link, '_self');
+        if (!win) {
+          alert('Could not open the link. Please try in another browser.');
+        }
+      };
+  
+      if (isInAppBrowser()) {
+        document.body.innerHTML = `
+          <p>Please tap the three dots in the top right corner and choose "Open in Browser" to view this event.</p>
+        `;
+        return;
+      }
+  
+      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+  
       if (/iPhone|iPad|iPod/i.test(userAgent)) {
-        // Attempt to open the app using the custom scheme
         openApp(deepLink);
-
-        // Fallback to App Store after a short delay if the app isn't installed
         setTimeout(() => {
-          window.location.href = appStoreURL;
+          openApp(appStoreURL);
         }, 1500);
       } else if (/Android/i.test(userAgent)) {
-        // Attempt to open the app using the intent URI for better compatibility
-        const intentLink = `intent://event/${uid}#Intent;scheme=calsocial;package=social.cal.calsocial;end;`;
+        const intentLink = `intent://event/${uid}#Intent;scheme=calsocial;package=social.cal.calsocial;S.browser_fallback_url=${encodeURIComponent(universalLink)};end;`;
         openApp(intentLink);
-
-        // Fallback to Play Store after a short delay if the app isn't installed
         setTimeout(() => {
-          window.location.href = playStoreURL;
+          openApp(playStoreURL);
         }, 1500);
       } else {
-        // For unsupported devices, redirect to the universal link
         openApp(universalLink);
       }
     });

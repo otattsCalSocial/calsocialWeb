@@ -5,17 +5,15 @@
     <title>Add Event</title>
     <script>
       document.addEventListener("DOMContentLoaded", function () {
-        // Extract the path from the current URL
-        const path = window.location.pathname + window.location.search;
-        const deepLink = "calsocial://" + path; // Append the path to the custom scheme
-        const universalLink = "https://cal.social" + path; // Include the path
+        const deepLink = "calsocial://"; // Custom scheme to open the app
+        const universalLink = "https://cal.social"; // Universal link as a fallback
         const appStoreURL = "https://apps.apple.com/app/calsocial/id6738835548";
         const playStoreURL =
           "https://play.google.com/store/apps/details?id=YOUR_PACKAGE_NAME";
 
         // Determine platform and attempt to open the app
         if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-          // Try to open the app using the custom scheme with path
+          // Try to open the app using the custom scheme
           window.location.href = deepLink;
 
           // Fallback to universal link or App Store after a delay
@@ -27,7 +25,7 @@
             }, 1000);
           }, 1500);
         } else if (/Android/i.test(navigator.userAgent)) {
-          // Try to open the app using the custom scheme with path
+          // Try to open the app using the custom scheme
           window.location.href = deepLink;
 
           // Fallback to Play Store after a delay
@@ -35,7 +33,7 @@
             window.location.href = playStoreURL;
           }, 1500);
         } else {
-          // For unsupported devices, redirect to the website with path
+          // For unsupported devices, redirect to the website
           window.location.href = universalLink;
         }
       });

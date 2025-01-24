@@ -146,8 +146,8 @@
         STATE.uid = pathParts[pathParts.length - 1];
 
         STATE.urls = {
-          deepLink: `calsocial://events/${STATE.uid}`,
-          universalLink: `https://cal.social/events/${STATE.uid}`,
+          deepLink: `calsocial://event/${STATE.uid}`,
+          universalLink: `https://cal.social/event/${STATE.uid}`,
           appStoreURL: "https://apps.apple.com/app/calsocial/id6738835548",
           playStoreURL:
             "https://play.google.com/store/apps/details?id=social.cal.calsocial",
@@ -227,7 +227,7 @@
         if (STATE.isInAppBrowser) {
           showBrowserInstructions();
         } else {
-          const intentUrl = `intent://events/${
+          const intentUrl = `intent://event/${
             STATE.uid
           }#Intent;scheme=calsocial;package=social.cal.calsocial;S.browser_fallback_url=${encodeURIComponent(
             STATE.urls.playStoreURL

@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Open Event in CalSocial</title>
+    <title>Open calsocial event</title>
     <style>
       body {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
@@ -84,7 +84,7 @@
   </head>
   <body>
     <div class="container">
-      <div class="message" id="message">Opening CalSocial...</div>
+      <div class="message" id="message">Opening calsocial...</div>
       <div class="error-message" id="errorMessage"></div>
       <div id="browserInstructions" style="display: none">
         <div class="browser-instructions">
@@ -149,7 +149,7 @@
 
       function showBrowserInstructions() {
         document.getElementById("message").textContent =
-          "To open this event in CalSocial:";
+          "You're using an internal browser. To open the event:";
         const instructionsDiv = document.getElementById("browserInstructions");
         const instructionsList = document.getElementById(
           "platformSpecificInstructions"

@@ -69,17 +69,30 @@
         background-color: #fdf0ef;
         display: none;
       }
+      .browser-instructions {
+        margin: 20px 0;
+        padding: 15px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        text-align: left;
+      }
+      .browser-instructions li {
+        margin: 10px 0;
+        line-height: 1.5;
+      }
     </style>
   </head>
   <body>
     <div class="container">
       <div class="message" id="message">Opening CalSocial...</div>
       <div class="error-message" id="errorMessage"></div>
-      <div id="iosInstructions" style="display: none">
-        1. Copy this link:<br />
+      <div id="browserInstructions" style="display: none">
+        <div class="browser-instructions">
+          <p>Please open this page in your default browser:</p>
+          <ul id="platformSpecificInstructions"></ul>
+        </div>
         <button id="copyButton" onclick="copyToClipboard()">Copy Link</button>
-        <span id="copyConfirm">✓ Copied!</span><br /><br />
-        2. Open Safari and paste the link
+        <span id="copyConfirm">✓ Copied!</span>
       </div>
     </div>
 
@@ -89,6 +102,32 @@
         platform: null,
         isInAppBrowser: false,
         urls: {},
+        browserInstructions: {
+          Facebook: [
+            "Tap the ⋮ (three dots) menu in the top right",
+            "Select 'Open in browser' or 'Open in Safari/Chrome'",
+          ],
+          Instagram: [
+            "Tap the ⋮ (three dots) menu in the top right",
+            "Select 'Open in browser'",
+          ],
+          LinkedIn: [
+            "Tap the ⋮ (three dots) menu in the top right",
+            "Select 'Open in browser'",
+          ],
+          Twitter: [
+            "Tap the ⋮ (three dots) menu in the top right",
+            "Select 'Open in browser'",
+          ],
+          WhatsApp: [
+            "Tap the ⋮ (three dots) menu in the top right",
+            "Select 'Open in browser'",
+          ],
+          Default: [
+            "Tap the menu button (usually in the top or bottom right)",
+            "Look for an option like 'Open in browser' or 'Open in Safari/Chrome'",
+          ],
+        },
       };
 
       function detectEnvironment() {
@@ -97,6 +136,16 @@
           /FBAN|FBAV|Instagram|Line|Twitter|WhatsApp|WeChat|LinkedIn|Messenger/i.test(
             ua
           );
+
+        // Detect which in-app browser
+        if (STATE.isInAppBrowser) {
+          if (/FBAN|FBAV/.test(ua)) STATE.inAppBrowserType = "Facebook";
+          else if (/Instagram/.test(ua)) STATE.inAppBrowserType = "Instagram";
+          else if (/Twitter/.test(ua)) STATE.inAppBrowserType = "Twitter";
+          else if (/WhatsApp/.test(ua)) STATE.inAppBrowserType = "WhatsApp";
+          else if (/LinkedIn/.test(ua)) STATE.inAppBrowserType = "LinkedIn";
+          else STATE.inAppBrowserType = "Default";
+        }
 
         if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) {
           STATE.platform = "ios";
@@ -121,6 +170,27 @@
         const errorElement = document.getElementById("errorMessage");
         errorElement.textContent = message;
         errorElement.style.display = "block";
+      }
+
+      function showBrowserInstructions() {
+        document.getElementById("message").textContent =
+          "To open this event in CalSocial:";
+        const instructionsDiv = document.getElementById("browserInstructions");
+        const instructionsList = document.getElementById(
+          "platformSpecificInstructions"
+        );
+        instructionsList.innerHTML = ""; // Clear existing instructions
+
+        const instructions =
+          STATE.browserInstructions[STATE.inAppBrowserType] ||
+          STATE.browserInstructions.Default;
+        instructions.forEach((instruction) => {
+          const li = document.createElement("li");
+          li.textContent = instruction;
+          instructionsList.appendChild(li);
+        });
+
+        instructionsDiv.style.display = "block";
       }
 
       async function copyToClipboard() {
@@ -155,24 +225,23 @@
 
       function handleIOS() {
         if (STATE.isInAppBrowser) {
-          // In iOS in-app browsers, show copy instructions
-          document.getElementById("message").textContent =
-            "To open this event in CalSocial, you'll need to:";
-          document.getElementById("iosInstructions").style.display = "block";
+          showBrowserInstructions();
         } else {
-          // In Safari/Chrome, redirect to App Store
           window.location.href = STATE.urls.appStoreURL;
         }
       }
 
       function handleAndroid() {
-        // For Android, use intent URL with store fallback
-        const intentUrl = `intent://event/${
-          STATE.uid
-        }#Intent;scheme=calsocial;package=social.cal.calsocial;S.browser_fallback_url=${encodeURIComponent(
-          STATE.urls.playStoreURL
-        )};end`;
-        window.location.href = intentUrl;
+        if (STATE.isInAppBrowser) {
+          showBrowserInstructions();
+        } else {
+          const intentUrl = `intent://event/${
+            STATE.uid
+          }#Intent;scheme=calsocial;package=social.cal.calsocial;S.browser_fallback_url=${encodeURIComponent(
+            STATE.urls.playStoreURL
+          )};end;`;
+          window.location.href = intentUrl;
+        }
       }
 
       function initialize() {
@@ -183,13 +252,11 @@
           return;
         }
 
-        // Handle platform-specific logic
         if (STATE.platform === "ios") {
           handleIOS();
         } else if (STATE.platform === "android") {
           handleAndroid();
         } else {
-          // Desktop browsers go to web version
           window.location.href = STATE.urls.universalLink;
         }
       }

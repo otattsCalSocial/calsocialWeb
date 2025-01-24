@@ -136,6 +136,7 @@
 
         STATE.urls = {
           universalLink: `https://cal.social/event/${STATE.uid}`,
+          deepLink: `calsocial://event/${STATE.uid}`,
           appStoreURL: "https://apps.apple.com/app/calsocial/id6738835548",
           playStoreURL:
             "https://play.google.com/store/apps/details?id=social.cal.calsocial",
@@ -203,7 +204,7 @@
         if (STATE.isInAppBrowser) {
           showBrowserInstructions();
         } else {
-          window.location.href = STATE.urls.universalLink;
+          window.location.href = STATE.urls.deepLink;
         }
       }
 

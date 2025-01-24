@@ -103,26 +103,6 @@
         isInAppBrowser: false,
         urls: {},
         browserInstructions: {
-          Facebook: [
-            "Tap the ⋮ (three dots) menu in the top right",
-            "Select 'Open in browser' or 'Open in Safari/Chrome'",
-          ],
-          Instagram: [
-            "Tap the ⋮ (three dots) menu in the top right",
-            "Select 'Open in browser'",
-          ],
-          LinkedIn: [
-            "Tap the ⋮ (three dots) menu in the top right",
-            "Select 'Open in browser'",
-          ],
-          Twitter: [
-            "Tap the ⋮ (three dots) menu in the top right",
-            "Select 'Open in browser'",
-          ],
-          WhatsApp: [
-            "Tap the ⋮ (three dots) menu in the top right",
-            "Select 'Open in browser'",
-          ],
           Default: [
             "Tap the menu button (usually in the top or bottom right)",
             "Look for an option like 'Open in browser' or 'Open in Safari/Chrome'",
@@ -139,12 +119,7 @@
 
         // Detect which in-app browser
         if (STATE.isInAppBrowser) {
-          if (/FBAN|FBAV/.test(ua)) STATE.inAppBrowserType = "Facebook";
-          else if (/Instagram/.test(ua)) STATE.inAppBrowserType = "Instagram";
-          else if (/Twitter/.test(ua)) STATE.inAppBrowserType = "Twitter";
-          else if (/WhatsApp/.test(ua)) STATE.inAppBrowserType = "WhatsApp";
-          else if (/LinkedIn/.test(ua)) STATE.inAppBrowserType = "LinkedIn";
-          else STATE.inAppBrowserType = "Default";
+          STATE.inAppBrowserType = "Default";
         }
 
         if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) {

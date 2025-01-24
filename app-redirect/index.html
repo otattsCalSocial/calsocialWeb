@@ -17,6 +17,15 @@
         padding: 20px;
         text-align: center;
         background-color: #9B111E;
+        position: relative;
+      }
+      .app-icon {
+        width: 64px;
+        height: 64px;
+        position: absolute;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
       }
       .container {
         max-width: 600px;
@@ -25,6 +34,7 @@
         background: white;
         border-radius: 12px;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        margin-top: 100px;
       }
       .button {
         display: inline-block;
@@ -83,6 +93,7 @@
     </style>
   </head>
   <body>
+    <img src="../assets/icon.png" alt="Calsocial Icon" class="app-icon" />
     <div class="container">
       <div class="message" id="message">Opening calsocial...</div>
       <div class="error-message" id="errorMessage"></div>
@@ -118,7 +129,6 @@
             ua
           );
 
-        // Detect which in-app browser
         if (STATE.isInAppBrowser) {
           STATE.inAppBrowserType = "Default";
         }
@@ -155,7 +165,7 @@
         const instructionsList = document.getElementById(
           "platformSpecificInstructions"
         );
-        instructionsList.innerHTML = ""; // Clear existing instructions
+        instructionsList.innerHTML = "";
 
         const instructions =
           STATE.browserInstructions[STATE.inAppBrowserType] ||

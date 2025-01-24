@@ -3,7 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Open calsocial event</title>
+    <meta property="og:image" content="https://cal.social/assets/smallLogo.png" />
+    <title>calsocial event</title>
     <style>
       body {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
@@ -83,6 +84,7 @@
     </style>
   </head>
   <body>
+    <img src="../assets/icon.png" alt="Calsocial Icon" class="app-icon" />
     <div class="container">
       <div class="message" id="message">Opening calsocial...</div>
       <div class="error-message" id="errorMessage"></div>
@@ -118,7 +120,6 @@
             ua
           );
 
-        // Detect which in-app browser
         if (STATE.isInAppBrowser) {
           STATE.inAppBrowserType = "Default";
         }
@@ -136,7 +137,6 @@
 
         STATE.urls = {
           universalLink: `https://cal.social/event/${STATE.uid}`,
-          deepLink: `calsocial://event/${STATE.uid}`,
           appStoreURL: "https://apps.apple.com/app/calsocial/id6738835548",
           playStoreURL:
             "https://play.google.com/store/apps/details?id=social.cal.calsocial",
@@ -156,7 +156,7 @@
         const instructionsList = document.getElementById(
           "platformSpecificInstructions"
         );
-        instructionsList.innerHTML = ""; // Clear existing instructions
+        instructionsList.innerHTML = "";
 
         const instructions =
           STATE.browserInstructions[STATE.inAppBrowserType] ||
@@ -204,7 +204,20 @@
         if (STATE.isInAppBrowser) {
           showBrowserInstructions();
         } else {
-          window.location.href = STATE.urls.deepLink;
+          // Record the current time
+          const start = Date.now();
+
+          // Attempt to open the app via the Universal Link
+          window.location.href = STATE.urls.universalLink;
+
+          // Set a timeout to check if the app was opened
+          setTimeout(() => {
+            // If the time difference is less than 1500ms, assume the app wasn't opened
+            if (Date.now() - start < 1500) {
+              // Redirect to the App Store
+              window.location.href = STATE.urls.appStoreURL;
+            }
+          }, 1000);
         }
       }
 

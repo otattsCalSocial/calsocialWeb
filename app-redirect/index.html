@@ -212,24 +212,46 @@
 
       function handleIOS() {
         if (STATE.isInAppBrowser) {
-          showBrowserInstructions();
+            showBrowserInstructions();
         } else {
-          window.location.href = STATE.urls.appStoreURL;
-        }
-      }
+            // Attempt to open the app via Universal Link
+            const appURL = STATE.urls.universalLink;
+            const appStoreURL = STATE.urls.appStoreURL;
+            const now = Date.now();
+            
+            // Set a timeout to redirect to App Store if the app doesn't open
+            setTimeout(() => {
+            if (Date.now() - now < 2000) { // If the app didn't open
+                window.location.href = appStoreURL;
+            }
+            }, 1500);
 
-      function handleAndroid() {
-        if (STATE.isInAppBrowser) {
-          showBrowserInstructions();
-        } else {
-          const intentUrl = `intent://event/${
-            STATE.uid
-          }#Intent;scheme=calsocial;package=social.cal.calsocial;S.browser_fallback_url=${encodeURIComponent(
-            STATE.urls.playStoreURL
-          )};end;`;
-          window.location.href = intentUrl;
+            // Attempt to open the app
+            window.location.href = appURL;
         }
-      }
+        }
+
+        function handleAndroid() {
+        if (STATE.isInAppBrowser) {
+            showBrowserInstructions();
+        } else {
+            // Attempt to open the app via Intent URL
+            const intentUrl = `intent://event/${STATE.uid}#Intent;scheme=calsocial;package=social.cal.calsocial;S.browser_fallback_url=${encodeURIComponent(STATE.urls.playStoreURL)};end;`;
+            const playStoreURL = STATE.urls.playStoreURL;
+            const now = Date.now();
+            
+            // Set a timeout to redirect to Play Store if the app doesn't open
+            setTimeout(() => {
+            if (Date.now() - now < 2000) { // If the app didn't open
+                window.location.href = playStoreURL;
+            }
+            }, 1500);
+
+            // Attempt to open the app
+            window.location.href = intentUrl;
+        }
+        }
+
 
       function initialize() {
         detectEnvironment();

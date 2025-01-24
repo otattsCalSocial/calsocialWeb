@@ -146,6 +146,7 @@
         STATE.uid = pathParts[pathParts.length - 1];
 
         STATE.urls = {
+          deepLink: `calsocial://events/${STATE.uid}`,
           universalLink: `https://cal.social/event/${STATE.uid}`,
           appStoreURL: "https://apps.apple.com/app/calsocial/id6738835548",
           playStoreURL:
@@ -214,7 +215,7 @@
         if (STATE.isInAppBrowser) {
           showBrowserInstructions();
         } else {
-            window.location.href = STATE.urls.universalLink;
+            window.location.href = STATE.urls.deepLink;
     // Fallback to App Store after delay if app not installed
     setTimeout(() => {
       window.location.href = STATE.urls.appStoreURL;

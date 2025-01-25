@@ -215,15 +215,17 @@
         if (STATE.isInAppBrowser) {
           showBrowserInstructions();
         } else {
+          const start = Date.now();
+          // Attempt to open the app
           window.location.href = STATE.urls.deepLink;
-          
-          // Listen for visibilitychange which triggers when user returns from dialog
-          document.addEventListener('visibilitychange', function() {
-            if (document.visibilityState === 'visible') {
-              // If we're back from the dialog, go to App Store
+
+          // Set a timeout to redirect to the App Store after 2 seconds
+          setTimeout(() => {
+            // If the page is still visible after the timeout, assume the app wasn't opened
+            if (Date.now() - start < 2000 + 100) { // Adding 100ms buffer
               window.location.href = STATE.urls.appStoreURL;
             }
-          });
+          }, 2000);
         }
       }
 

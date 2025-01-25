@@ -91,6 +91,14 @@
         margin: 10px 0;
         line-height: 1.5;
       }
+      /* New Styles for App Buttons */
+      .app-buttons {
+        margin: 20px 0;
+      }
+      .app-buttons .button {
+        width: 100%;
+        max-width: 200px;
+      }
     </style>
   </head>
   <body>
@@ -98,13 +106,21 @@
     <div class="container">
       <div class="message" id="message">Opening calsocial...</div>
       <div class="error-message" id="errorMessage"></div>
+      
+      <!-- Browser Instructions Section -->
       <div id="browserInstructions" style="display: none">
         <div class="browser-instructions">
           <p>Please open this page in your default browser:</p>
           <ul id="platformSpecificInstructions"></ul>
         </div>
-        <button id="copyButton" onclick="copyToClipboard()">Copy Link</button>
+        <button class="button" id="copyButton" onclick="copyToClipboard()">Copy Link</button>
         <span id="copyConfirm">✓ Copied!</span>
+      </div>
+
+      <!-- New App Buttons Section -->
+      <div id="appButtons" style="display: none" class="app-buttons">
+        <button class="button" id="openAppButton">Open App</button>
+        <button class="button" id="openStoreButton">Open App Store</button>
       </div>
     </div>
 
@@ -181,6 +197,22 @@
         instructionsDiv.style.display = "block";
       }
 
+      function showAppButtons() {
+        document.getElementById("message").textContent =
+          "If the app didn't open automatically, please choose an option below:";
+        const appButtonsDiv = document.getElementById("appButtons");
+        appButtonsDiv.style.display = "block";
+
+        // Set up button actions
+        document.getElementById("openAppButton").addEventListener("click", () => {
+          openApp();
+        });
+
+        document.getElementById("openStoreButton").addEventListener("click", () => {
+          redirectToStore();
+        });
+      }
+
       async function copyToClipboard() {
         try {
           await navigator.clipboard.writeText(STATE.urls.universalLink);
@@ -211,21 +243,38 @@
         }
       }
 
+      function openApp() {
+        const start = Date.now();
+        // Attempt to open the app
+        window.location.href = STATE.urls.deepLink;
+
+        // Set a timeout to check if the app was opened
+        setTimeout(() => {
+          // If the page is still visible after the timeout, assume the app wasn't opened
+          if (Date.now() - start < 2000 + 100) { // Adding 100ms buffer
+            showError("Failed to open the app. Please try again or use the App Store.");
+          }
+        }, 2000);
+      }
+
+      function redirectToStore() {
+        if (STATE.platform === "ios") {
+          window.location.href = STATE.urls.appStoreURL;
+        } else if (STATE.platform === "android") {
+          window.location.href = STATE.urls.playStoreURL;
+        } else {
+          // For desktop or other platforms, redirect to the universal link
+          window.location.href = STATE.urls.universalLink;
+        }
+      }
+
       function handleIOS() {
         if (STATE.isInAppBrowser) {
           showBrowserInstructions();
         } else {
-          const start = Date.now();
-          // Attempt to open the app
-          //window.location.href = STATE.urls.deepLink;
-
-          // Set a timeout to redirect to the App Store after 2 seconds
-          setTimeout(() => {
-            // If the page is still visible after the timeout, assume the app wasn't opened
-            if (Date.now() - start < 2000 + 100) { // Adding 100ms buffer
-              window.location.href = STATE.urls.appStoreURL;
-            }
-          }, 2000);
+          showAppButtons();
+          // Optionally, you can uncomment the auto-open app feature
+          // openApp();
         }
       }
 
@@ -233,12 +282,7 @@
         if (STATE.isInAppBrowser) {
           showBrowserInstructions();
         } else {
-          const intentUrl = `intent://event/${
-            STATE.uid
-          }#Intent;scheme=calsocial;package=social.cal.calsocial;S.browser_fallback_url=${encodeURIComponent(
-            STATE.urls.playStoreURL
-          )};end;`;
-          window.location.href = intentUrl;
+          showAppButtons();
         }
       }
 
@@ -255,6 +299,7 @@
         } else if (STATE.platform === "android") {
           handleAndroid();
         } else {
+          // For desktop or other platforms, redirect to the universal link
           window.location.href = STATE.urls.universalLink;
         }
       }

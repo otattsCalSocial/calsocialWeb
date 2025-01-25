@@ -215,7 +215,15 @@
         if (STATE.isInAppBrowser) {
           showBrowserInstructions();
         } else {
-            window.location.href = STATE.urls.deepLink;
+          window.location.href = STATE.urls.deepLink;
+          
+          // Listen for visibilitychange which triggers when user returns from dialog
+          document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'visible') {
+              // If we're back from the dialog, go to App Store
+              window.location.href = STATE.urls.appStoreURL;
+            }
+          });
         }
       }
 

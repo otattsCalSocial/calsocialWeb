@@ -252,7 +252,7 @@
         setTimeout(() => {
           // If the page is still visible after the timeout, assume the app wasn't opened
           if (Date.now() - start < 2000 + 100) { // Adding 100ms buffer
-            showError("Failed to open the app. Please try again or use the App Store.");
+            showError("Failed to open the app. Please try again or download the app.");
           }
         }, 2000);
       }

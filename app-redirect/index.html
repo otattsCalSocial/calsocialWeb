@@ -216,10 +216,6 @@
           showBrowserInstructions();
         } else {
             window.location.href = STATE.urls.deepLink;
-    // Fallback to App Store after delay if app not installed
-    setTimeout(() => {
-      window.location.href = STATE.urls.appStoreURL;
-    }, 1000);
         }
       }
 

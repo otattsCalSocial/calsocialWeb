@@ -203,15 +203,11 @@
 
         document
           .getElementById("openAppButton")
-          .addEventListener("click", () => {
-            openApp();
-          });
+          .addEventListener("click", openApp);
 
         document
           .getElementById("openStoreButton")
-          .addEventListener("click", () => {
-            redirectToStore();
-          });
+          .addEventListener("click", redirectToStore);
       }
 
       async function copyToClipboard() {
@@ -244,18 +240,10 @@
         }
       }
 
+      // Removed the 'setTimeout' check that displayed an error
       function openApp() {
-        const start = Date.now();
-        // Attempt to open the app
+        // Attempt to open the app directly
         window.location.href = STATE.urls.deepLink;
-
-        // Set a timeout to check if the app was opened
-        setTimeout(() => {
-          // If the page is still visible after the timeout, assume the app wasn't opened
-          if (Date.now() - start < 2000 + 100) {
-            showError("Failed to open the app. Please try again or download the app.");
-          }
-        }, 2000);
       }
 
       function redirectToStore() {
@@ -279,12 +267,11 @@
         }
       }
 
-      // FIXED ANDROID LOGIC
+      // Android logic: automatically open if not in an in-app browser, then show fallback.
       function handleAndroid() {
         if (STATE.isInAppBrowser) {
           showBrowserInstructions();
         } else {
-          // Automatically attempt to open the app when not in an in-app browser
           openApp();
           showAppButtons();
         }

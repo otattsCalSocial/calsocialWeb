@@ -91,7 +91,6 @@
         margin: 10px 0;
         line-height: 1.5;
       }
-      /* New Styles for App Buttons */
       .app-buttons {
         margin: 20px 0;
       }
@@ -117,7 +116,7 @@
         <span id="copyConfirm">✓ Copied!</span>
       </div>
 
-      <!-- New App Buttons Section -->
+      <!-- App Buttons Section -->
       <div id="appButtons" style="display: none" class="app-buttons">
         <button class="button" id="openStoreButton">Download calsocial</button>
         <button class="button" id="openAppButton">Open calsocial</button>
@@ -141,10 +140,9 @@
 
       function detectEnvironment() {
         const ua = navigator.userAgent || navigator.vendor || window.opera;
+
         STATE.isInAppBrowser =
-          /FBAN|FBAV|Instagram|Line|Twitter|WhatsApp|WeChat|LinkedIn|Messenger/i.test(
-            ua
-          );
+          /FBAN|FBAV|Instagram|Line|Twitter|WhatsApp|WeChat|LinkedIn|Messenger/i.test(ua);
 
         if (STATE.isInAppBrowser) {
           STATE.inAppBrowserType = "Default";
@@ -203,14 +201,17 @@
         const appButtonsDiv = document.getElementById("appButtons");
         appButtonsDiv.style.display = "block";
 
-        // Set up button actions
-        document.getElementById("openAppButton").addEventListener("click", () => {
-          openApp();
-        });
+        document
+          .getElementById("openAppButton")
+          .addEventListener("click", () => {
+            openApp();
+          });
 
-        document.getElementById("openStoreButton").addEventListener("click", () => {
-          redirectToStore();
-        });
+        document
+          .getElementById("openStoreButton")
+          .addEventListener("click", () => {
+            redirectToStore();
+          });
       }
 
       async function copyToClipboard() {
@@ -251,7 +252,7 @@
         // Set a timeout to check if the app was opened
         setTimeout(() => {
           // If the page is still visible after the timeout, assume the app wasn't opened
-          if (Date.now() - start < 2000 + 100) { // Adding 100ms buffer
+          if (Date.now() - start < 2000 + 100) {
             showError("Failed to open the app. Please try again or download the app.");
           }
         }, 2000);
@@ -273,15 +274,18 @@
           showBrowserInstructions();
         } else {
           showAppButtons();
-          // Optionally, you can uncomment the auto-open app feature
+          // If you want to auto-open the app on iOS, uncomment below:
           // openApp();
         }
       }
 
+      // FIXED ANDROID LOGIC
       function handleAndroid() {
         if (STATE.isInAppBrowser) {
           showBrowserInstructions();
         } else {
+          // Automatically attempt to open the app when not in an in-app browser
+          openApp();
           showAppButtons();
         }
       }

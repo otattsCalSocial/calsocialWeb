@@ -254,6 +254,28 @@ p {
   max-width: 100%;
 }
 
+/* FAQ-specific overrides */
+.faq-container {
+  /* Add extra margin to clear the fixed nav at the top */
+  margin-top: 100px;  
+
+  /* Add bottom margin to avoid overlap with a fixed footer (if your footer is fixed) */
+  margin-bottom: 80px;  
+
+  /* If you want to control max width on the FAQ page specifically */
+  max-width: 800px; 
+  box-sizing: border-box;
+}
+
+/* Optionally, if the FAQ text needs consistent styling without affecting the rest of the site */
+.faq-container h1,
+.faq-container h2,
+.faq-container p,
+.faq-container li {
+  color: #ffffff;  /* or any color you prefer */
+}
+
+
 /* Responsive Design */
 @supports (-webkit-touch-callout: none) {
   .main-nav {

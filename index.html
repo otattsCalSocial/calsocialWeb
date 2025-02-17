@@ -1,11 +1,22 @@
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta property="og:image" content="https://cal.social/assets/smallLogo.png" />
+    <meta
+      property="og:image"
+      content="https://cal.social/assets/smallLogo.png"
+    />
     <title>calsocial</title>
     <link rel="icon" type="image/png" href="assets/logoRed.png" />
     <link rel="stylesheet" href="styles.css?v=3" />
+    <style>
+      /* Optional: Define a class to resize the Google Play button */
+      .googleplay-button {
+        width: 170px; /* Adjust this value as desired */
+        height: auto;
+      }
+    </style>
   </head>
   <body>
     <nav class="main-nav">
@@ -27,6 +38,15 @@
               src="assets/AppleDownload.svg"
               alt="Download on the App Store"
               class="appstore-button"
+            />
+          </a>
+          <a
+            href="https://play.google.com/store/apps/details?id=social.cal.calsocial&hl=en"
+          >
+            <img
+              src="assets/GooglePlay.png"
+              alt="Get it on Google Play"
+              class="googleplay-button"
             />
           </a>
         </div>

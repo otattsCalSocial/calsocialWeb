@@ -3,7 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta property="og:image" content="https://cal.social/assets/smallLogo.png" />
+    <meta
+      property="og:image"
+      content="https://cal.social/assets/smallLogo.png"
+    />
     <title>calsocial event</title>
     <style>
       body {
@@ -17,7 +20,7 @@
         margin: 0;
         padding: 20px;
         text-align: center;
-        background-color: #9B111E;
+        background-color: #9b111e;
         position: relative;
       }
       .app-icon {
@@ -40,7 +43,7 @@
       .button {
         display: inline-block;
         padding: 12px 24px;
-        background-color: #9B111E;
+        background-color: #9b111e;
         color: white;
         text-decoration: none;
         border-radius: 8px;
@@ -51,7 +54,7 @@
         transition: background-color 0.2s;
       }
       .button:hover {
-        background-color: #7D0E18;
+        background-color: #7d0e18;
       }
       .message {
         margin: 20px 0;
@@ -105,14 +108,16 @@
     <div class="container">
       <div class="message" id="message">Opening calsocial...</div>
       <div class="error-message" id="errorMessage"></div>
-      
+
       <!-- Browser Instructions Section -->
       <div id="browserInstructions" style="display: none">
         <div class="browser-instructions">
           <p>Please open this page in your default browser:</p>
           <ul id="platformSpecificInstructions"></ul>
         </div>
-        <button class="button" id="copyButton" onclick="copyToClipboard()">Copy Link</button>
+        <button class="button" id="copyButton" onclick="copyToClipboard()">
+          Copy Link
+        </button>
         <span id="copyConfirm">✓ Copied!</span>
       </div>
 
@@ -133,7 +138,7 @@
           Default: [
             "Tap the menu button (usually in the top or bottom right)",
             "Look for an option like 'Open in browser' or 'Open in Safari/Chrome'",
-            "You will be redirected to calsocial or prompted to download the app"
+            "You will be redirected to calsocial or prompted to download the app",
           ],
         },
       };
@@ -142,7 +147,9 @@
         const ua = navigator.userAgent || navigator.vendor || window.opera;
 
         STATE.isInAppBrowser =
-          /FBAN|FBAV|Instagram|Line|Twitter|WhatsApp|WeChat|LinkedIn|Messenger/i.test(ua);
+          /FBAN|FBAV|Instagram|Line|Twitter|WhatsApp|WeChat|LinkedIn|Messenger/i.test(
+            ua
+          );
 
         if (STATE.isInAppBrowser) {
           STATE.inAppBrowserType = "Default";
@@ -261,9 +268,8 @@
         if (STATE.isInAppBrowser) {
           showBrowserInstructions();
         } else {
+          openApp();
           showAppButtons();
-          // If you want to auto-open the app on iOS, uncomment below:
-          // openApp();
         }
       }
 

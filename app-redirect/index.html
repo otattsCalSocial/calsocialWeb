@@ -3,7 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta property="og:image" content="https://cal.social/assets/smallLogo.png" />
+    <meta
+      property="og:image"
+      content="https://cal.social/assets/smallLogo.png"
+    />
     <title>calsocial event</title>
     <style>
       body {
@@ -58,11 +61,6 @@
         color: #333;
         font-size: 1.1em;
       }
-      .message-small {
-        margin: 10px 0;
-        color: #666;
-        font-size: 0.9em;
-      }
       #copyButton {
         background: none;
         border: none;
@@ -103,158 +101,60 @@
         width: 100%;
         max-width: 200px;
       }
-      .qr-code-container {
-        margin: 20px 0;
-        display: none;
-      }
-      #qrCode {
-        width: 150px;
-        height: 150px;
-        margin: 0 auto;
-      }
-      .tabs {
-        display: flex;
-        justify-content: center;
-        margin-bottom: 15px;
-      }
-      .tab {
-        padding: 8px 16px;
-        cursor: pointer;
-        border-bottom: 2px solid transparent;
-        margin: 0 5px;
-      }
-      .tab.active {
-        border-bottom: 2px solid #9b111e;
-        font-weight: bold;
-      }
-      .tab-content {
-        display: none;
-      }
-      .tab-content.active {
-        display: block;
-      }
-      .loader {
-        border: 4px solid #f3f3f3;
-        border-top: 4px solid #9b111e;
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        animation: spin 1s linear infinite;
-        margin: 20px auto;
-        display: none;
-      }
-      @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
     </style>
   </head>
   <body>
     <img src="../assets/icon.png" alt="Calsocial Icon" class="app-icon" />
     <div class="container">
       <div class="message" id="message">Opening calsocial...</div>
-      <div class="loader" id="loader"></div>
       <div class="error-message" id="errorMessage"></div>
 
-      <div id="tabContainer" style="display: none;">
-        <div class="tabs">
-          <div class="tab active" onclick="switchTab('appOptions')">Open App</div>
-          <div class="tab" onclick="switchTab('browserOptions')">Browser</div>
-          <div class="tab" onclick="switchTab('qrOptions')">QR Code</div>
+      <!-- Browser Instructions Section -->
+      <div id="browserInstructions" style="display: none">
+        <div class="browser-instructions">
+          <p>Please open this page in your default browser:</p>
+          <ul id="platformSpecificInstructions"></ul>
         </div>
+        <button class="button" id="copyButton" onclick="copyToClipboard()">
+          Copy Link
+        </button>
+        <span id="copyConfirm">✓ Copied!</span>
+      </div>
 
-        <div id="appOptions" class="tab-content active">
-          <div class="app-buttons">
-            <button class="button" id="openAppButton">Open calsocial</button>
-            <button class="button" id="openStoreButton">Download calsocial</button>
-          </div>
-          <div class="message-small">App not opening? Try the browser options.</div>
-        </div>
-
-        <div id="browserOptions" class="tab-content">
-          <div class="browser-instructions">
-            <p>Try one of these options:</p>
-            <ul id="platformSpecificInstructions"></ul>
-          </div>
-          <div class="app-buttons">
-            <button class="button" id="copyButton" onclick="copyToClipboard()">
-              Copy Link
-            </button>
-            <span id="copyConfirm">✓ Copied!</span>
-          </div>
-        </div>
-
-        <div id="qrOptions" class="tab-content">
-          <div class="qr-code-container" id="qrCodeContainer">
-            <p>Scan this QR code with your phone camera to open the event:</p>
-            <div id="qrCode"></div>
-          </div>
-        </div>
+      <!-- App Buttons Section -->
+      <div id="appButtons" style="display: none" class="app-buttons">
+        <button class="button" id="openStoreButton">Download calsocial</button>
+        <button class="button" id="openAppButton">Open calsocial</button>
       </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script>
       const STATE = {
         uid: null,
         platform: null,
         isInAppBrowser: false,
-        inAppBrowserType: null,
         urls: {},
         browserInstructions: {
-          Facebook: [
-            "Tap the three dots (⋮) in the top right corner",
-            "Select 'Open in Browser' or 'Open in Chrome/Safari'",
-            "You'll be redirected to calsocial automatically"
-          ],
-          Instagram: [
-            "Tap the three dots (⋮) in the top right corner",
-            "Select 'Open in Browser' or 'Open in Chrome/Safari'",
-            "You'll be redirected to calsocial automatically"
-          ],
-          Twitter: [
-            "Tap the share icon at the bottom of the screen",
-            "Select 'Open in Browser'",
-            "You'll be redirected to calsocial automatically"
-          ],
-          LinkedIn: [
-            "Tap the three dots (⋮) in the top right corner",
-            "Select 'Open in Browser'",
-            "You'll be redirected to calsocial automatically"
-          ],
           Default: [
             "Tap the menu button (usually in the top or bottom right)",
             "Look for an option like 'Open in browser' or 'Open in Safari/Chrome'",
-            "You will be redirected to calsocial automatically"
-          ]
+            "You will be redirected to calsocial or prompted to download the app",
+          ],
         },
-        redirectCount: 0,
-        maxRedirects: 3,
-        lastRedirectTime: 0
       };
 
       function detectEnvironment() {
         const ua = navigator.userAgent || navigator.vendor || window.opera;
 
-        // Detect in-app browsers with more specific matching
-        if (/FBAN|FBAV/.test(ua)) {
-          STATE.isInAppBrowser = true;
-          STATE.inAppBrowserType = "Facebook";
-        } else if (/Instagram/.test(ua)) {
-          STATE.isInAppBrowser = true;
-          STATE.inAppBrowserType = "Instagram";
-        } else if (/Twitter/.test(ua)) {
-          STATE.isInAppBrowser = true;
-          STATE.inAppBrowserType = "Twitter";
-        } else if (/LinkedIn/.test(ua)) {
-          STATE.isInAppBrowser = true;
-          STATE.inAppBrowserType = "LinkedIn";
-        } else if (/Line|WhatsApp|WeChat|Messenger/.test(ua)) {
-          STATE.isInAppBrowser = true;
+        STATE.isInAppBrowser =
+          /FBAN|FBAV|Instagram|Line|Twitter|WhatsApp|WeChat|LinkedIn|Messenger/i.test(
+            ua
+          );
+
+        if (STATE.isInAppBrowser) {
           STATE.inAppBrowserType = "Default";
         }
 
-        // Detect platform
         if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) {
           STATE.platform = "ios";
         } else if (/Android/.test(ua)) {
@@ -263,74 +163,58 @@
           STATE.platform = "desktop";
         }
 
-        // Get UID from URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const pathParam = urlParams.get('uid') || extractUidFromPath();
-        STATE.uid = pathParam;
+        const pathParts = window.location.pathname.split("/");
+        STATE.uid = pathParts[pathParts.length - 1];
 
-        // Configure URLs
         STATE.urls = {
           deepLink: `calsocial://event/${STATE.uid}`,
           universalLink: `https://cal.social/event/${STATE.uid}`,
           appStoreURL: "https://apps.apple.com/app/calsocial/id6738835548",
-          playStoreURL: "https://play.google.com/store/apps/details?id=social.cal.calsocial",
+          playStoreURL:
+            "https://play.google.com/store/apps/details?id=social.cal.calsocial",
         };
       }
 
-      function extractUidFromPath() {
-        const pathParts = window.location.pathname.split("/");
-        return pathParts[pathParts.length - 1];
-      }
-
       function showError(message) {
-        document.getElementById("loader").style.display = "none";
         const errorElement = document.getElementById("errorMessage");
         errorElement.textContent = message;
         errorElement.style.display = "block";
       }
 
-      function switchTab(tabId) {
-        // Hide all tab contents
-        document.querySelectorAll('.tab-content').forEach(tab => {
-          tab.classList.remove('active');
-        });
-        
-        // Deactivate all tabs
-        document.querySelectorAll('.tab').forEach(tab => {
-          tab.classList.remove('active');
-        });
-        
-        // Activate the selected tab
-        document.getElementById(tabId).classList.add('active');
-        
-        // Find and activate the tab button
-        const tabButtons = document.querySelectorAll('.tab');
-        for (let i = 0; i < tabButtons.length; i++) {
-          if (tabButtons[i].textContent.toLowerCase().includes(tabId.replace('Options', '').toLowerCase())) {
-            tabButtons[i].classList.add('active');
-            break;
-          }
-        }
+      function showBrowserInstructions() {
+        document.getElementById("message").textContent =
+          "You're using an internal app browser. To open this event:";
+        const instructionsDiv = document.getElementById("browserInstructions");
+        const instructionsList = document.getElementById(
+          "platformSpecificInstructions"
+        );
+        instructionsList.innerHTML = "";
 
-        // Generate QR code if the QR tab is selected
-        if (tabId === 'qrOptions') {
-          generateQRCode();
-        }
+        const instructions =
+          STATE.browserInstructions[STATE.inAppBrowserType] ||
+          STATE.browserInstructions.Default;
+        instructions.forEach((instruction) => {
+          const li = document.createElement("li");
+          li.textContent = instruction;
+          instructionsList.appendChild(li);
+        });
+
+        instructionsDiv.style.display = "block";
       }
 
-      function generateQRCode() {
-        const qrContainer = document.getElementById('qrCode');
-        if (qrContainer.innerHTML === '') {
-          new QRCode(qrContainer, {
-            text: STATE.urls.universalLink,
-            width: 150,
-            height: 150,
-            colorDark: "#000000",
-            colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.H
-          });
-        }
-        document.getElementById('qrCodeContainer').style.display = 'block';
+      function showAppButtons() {
+        document.getElementById("message").textContent =
+          "If calsocial didn't open automatically, please choose an option below:";
+        const appButtonsDiv = document.getElementById("appButtons");
+        appButtonsDiv.style.display = "block";
+
+        document
+          .getElementById("openAppButton")
+          .addEventListener("click", openApp);
+
+        document
+          .getElementById("openStoreButton")
+          .addEventListener("click", redirectToStore);
       }
 
       async function copyToClipboard() {
@@ -363,50 +247,10 @@
         }
       }
 
+      // Removed the 'setTimeout' check that displayed an error
       function openApp() {
-        const now = Date.now();
-        
-        // Prevent too many redirect attempts
-        if (STATE.redirectCount >= STATE.maxRedirects) {
-          document.getElementById("loader").style.display = "none";
-          document.getElementById("tabContainer").style.display = "block";
-          document.getElementById("message").textContent = 
-            "We couldn't automatically open calsocial. Please choose an option below:";
-          return;
-        }
-        
-        // Throttle redirects
-        if (now - STATE.lastRedirectTime < 1000) {
-          return;
-        }
-        
-        STATE.redirectCount++;
-        STATE.lastRedirectTime = now;
-        
-        // Show loader
-        document.getElementById("loader").style.display = "block";
-        
-        // Try the universal link first (which works better in many cases)
-        if (STATE.redirectCount === 1) {
-          window.location.href = STATE.urls.universalLink;
-          
-          // Then try the deep link as a backup after a short delay
-          setTimeout(() => {
-            if (document.visibilityState !== 'hidden') {
-              window.location.href = STATE.urls.deepLink;
-            }
-          }, 500);
-          
-          // Show options after a reasonable timeout
-          setTimeout(() => {
-            if (document.visibilityState !== 'hidden') {
-              document.getElementById("loader").style.display = "none";
-              document.getElementById("tabContainer").style.display = "block";
-              document.getElementById("message").textContent = 
-                "We couldn't automatically open calsocial. Please choose an option below:";
-            }
-          }, 2000);
-        }
+        // Attempt to open the app directly
+        window.location.href = STATE.urls.deepLink;
       }
 
       function redirectToStore() {
@@ -415,49 +259,29 @@
         } else if (STATE.platform === "android") {
           window.location.href = STATE.urls.playStoreURL;
         } else {
-          // For desktop, open the universal link
+          // For desktop or other platforms, redirect to the universal link
           window.location.href = STATE.urls.universalLink;
         }
       }
 
-      function prepareTabContainer() {
-        document.getElementById("tabContainer").style.display = "block";
-        
+      function handleIOS() {
         if (STATE.isInAppBrowser) {
-          // For in-app browsers, default to the browser tab which is more useful
-          switchTab('browserOptions');
+          showBrowserInstructions();
         } else {
-          // For regular browsers, default to app options
-          switchTab('appOptions');
+          openApp();
+          showAppButtons();
         }
-        
-        // Set up browser instructions
-        const instructionsList = document.getElementById("platformSpecificInstructions");
-        instructionsList.innerHTML = "";
-        
-        const instructions = STATE.browserInstructions[STATE.inAppBrowserType] || 
-                            STATE.browserInstructions.Default;
-                            
-        instructions.forEach((instruction) => {
-          const li = document.createElement("li");
-          li.textContent = instruction;
-          instructionsList.appendChild(li);
-        });
-        
-        // Set up button event listeners
-        document.getElementById("openAppButton").addEventListener("click", openApp);
-        document.getElementById("openStoreButton").addEventListener("click", redirectToStore);
       }
 
-      // Handle visibility changes to detect if app was opened
-      document.addEventListener('visibilitychange', function() {
-        if (document.visibilityState === 'visible' && STATE.redirectCount > 0) {
-          document.getElementById("loader").style.display = "none";
-          document.getElementById("tabContainer").style.display = "block";
-          document.getElementById("message").textContent = 
-            "We couldn't automatically open calsocial. Please choose an option below:";
+      // Android logic: automatically open if not in an in-app browser, then show fallback.
+      function handleAndroid() {
+        if (STATE.isInAppBrowser) {
+          showBrowserInstructions();
+        } else {
+          openApp();
+          showAppButtons();
         }
-      });
+      }
 
       function initialize() {
         detectEnvironment();
@@ -467,19 +291,13 @@
           return;
         }
 
-        // For all platforms, try deep linking first
-        if (STATE.isInAppBrowser) {
-          // Show tailored instructions immediately for in-app browsers
-          document.getElementById("loader").style.display = "none";
-          document.getElementById("message").textContent = 
-            `Opening calsocial from ${STATE.inAppBrowserType || "this browser"} requires a few steps:`;
-          prepareTabContainer();
+        if (STATE.platform === "ios") {
+          handleIOS();
+        } else if (STATE.platform === "android") {
+          handleAndroid();
         } else {
-          // For regular browsers, try to open the app automatically
-          openApp();
-          
-          // Prepare fallback options
-          prepareTabContainer();
+          // For desktop or other platforms, redirect to the universal link
+          window.location.href = STATE.urls.universalLink;
         }
       }
 

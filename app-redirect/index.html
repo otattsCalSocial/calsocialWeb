@@ -3,10 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      property="og:image"
-      content="https://cal.social/assets/smallLogo.png"
-    />
+    <meta property="og:image" content="https://cal.social/assets/smallLogo.png" />
     <title>calsocial event</title>
     <style>
       body {
@@ -109,15 +106,13 @@
       <div class="message" id="message">Opening calsocial...</div>
       <div class="error-message" id="errorMessage"></div>
 
-      <!-- Browser Instructions Section -->
+      <!-- Browser Instructions Section (no longer shown in in‑app browsers) -->
       <div id="browserInstructions" style="display: none">
         <div class="browser-instructions">
           <p>Please open this page in your default browser:</p>
           <ul id="platformSpecificInstructions"></ul>
         </div>
-        <button class="button" id="copyButton" onclick="copyToClipboard()">
-          Copy Link
-        </button>
+        <button class="button" id="copyButton" onclick="copyToClipboard()">Copy Link</button>
         <span id="copyConfirm">✓ Copied!</span>
       </div>
 
@@ -134,6 +129,7 @@
         platform: null,
         isInAppBrowser: false,
         urls: {},
+        // Browser instructions are kept if needed later.
         browserInstructions: {
           Default: [
             "Tap the menu button (usually in the top or bottom right)",
@@ -146,11 +142,8 @@
       function detectEnvironment() {
         const ua = navigator.userAgent || navigator.vendor || window.opera;
 
-        STATE.isInAppBrowser =
-          /FBAN|FBAV|Instagram|Line|Twitter|WhatsApp|WeChat|LinkedIn|Messenger/i.test(
-            ua
-          );
-
+        // Detect in-app browsers using common identifiers.
+        STATE.isInAppBrowser = /FBAN|FBAV|Instagram|Line|Twitter|WhatsApp|WeChat|LinkedIn|Messenger/i.test(ua);
         if (STATE.isInAppBrowser) {
           STATE.inAppBrowserType = "Default";
         }
@@ -170,8 +163,7 @@
           deepLink: `calsocial://event/${STATE.uid}`,
           universalLink: `https://cal.social/event/${STATE.uid}`,
           appStoreURL: "https://apps.apple.com/app/calsocial/id6738835548",
-          playStoreURL:
-            "https://play.google.com/store/apps/details?id=social.cal.calsocial",
+          playStoreURL: "https://play.google.com/store/apps/details?id=social.cal.calsocial",
         };
       }
 
@@ -182,17 +174,12 @@
       }
 
       function showBrowserInstructions() {
-        document.getElementById("message").textContent =
-          "You're using an internal app browser. To open this event:";
+        document.getElementById("message").textContent = "You're using an internal app browser. To open this event:";
         const instructionsDiv = document.getElementById("browserInstructions");
-        const instructionsList = document.getElementById(
-          "platformSpecificInstructions"
-        );
+        const instructionsList = document.getElementById("platformSpecificInstructions");
         instructionsList.innerHTML = "";
 
-        const instructions =
-          STATE.browserInstructions[STATE.inAppBrowserType] ||
-          STATE.browserInstructions.Default;
+        const instructions = STATE.browserInstructions[STATE.inAppBrowserType] || STATE.browserInstructions.Default;
         instructions.forEach((instruction) => {
           const li = document.createElement("li");
           li.textContent = instruction;
@@ -203,18 +190,12 @@
       }
 
       function showAppButtons() {
-        document.getElementById("message").textContent =
-          "If calsocial didn't open automatically, please choose an option below:";
+        document.getElementById("message").textContent = "If calsocial didn't open automatically, please choose an option below:";
         const appButtonsDiv = document.getElementById("appButtons");
         appButtonsDiv.style.display = "block";
 
-        document
-          .getElementById("openAppButton")
-          .addEventListener("click", openApp);
-
-        document
-          .getElementById("openStoreButton")
-          .addEventListener("click", redirectToStore);
+        document.getElementById("openAppButton").addEventListener("click", openApp);
+        document.getElementById("openStoreButton").addEventListener("click", redirectToStore);
       }
 
       async function copyToClipboard() {
@@ -247,9 +228,7 @@
         }
       }
 
-      // Removed the 'setTimeout' check that displayed an error
       function openApp() {
-        // Attempt to open the app directly
         window.location.href = STATE.urls.deepLink;
       }
 
@@ -259,24 +238,23 @@
         } else if (STATE.platform === "android") {
           window.location.href = STATE.urls.playStoreURL;
         } else {
-          // For desktop or other platforms, redirect to the universal link
           window.location.href = STATE.urls.universalLink;
         }
       }
 
+      // For both iOS and Android, show the app buttons regardless of in‑app browser.
       function handleIOS() {
         if (STATE.isInAppBrowser) {
-          showBrowserInstructions();
+          showAppButtons();
         } else {
           openApp();
           showAppButtons();
         }
       }
 
-      // Android logic: automatically open if not in an in-app browser, then show fallback.
       function handleAndroid() {
         if (STATE.isInAppBrowser) {
-          showBrowserInstructions();
+          showAppButtons();
         } else {
           openApp();
           showAppButtons();
@@ -296,7 +274,7 @@
         } else if (STATE.platform === "android") {
           handleAndroid();
         } else {
-          // For desktop or other platforms, redirect to the universal link
+          // For desktop or other platforms, redirect to the universal link immediately.
           window.location.href = STATE.urls.universalLink;
         }
       }

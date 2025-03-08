@@ -106,13 +106,15 @@
       <div class="message" id="message">Opening calsocial...</div>
       <div class="error-message" id="errorMessage"></div>
 
-      <!-- Browser Instructions Section (no longer shown in in‑app browsers) -->
+      <!-- Browser Instructions Section -->
       <div id="browserInstructions" style="display: none">
         <div class="browser-instructions">
           <p>Please open this page in your default browser:</p>
           <ul id="platformSpecificInstructions"></ul>
         </div>
-        <button class="button" id="copyButton" onclick="copyToClipboard()">Copy Link</button>
+        <button class="button" id="copyButton" onclick="copyToClipboard()">
+          Copy Link
+        </button>
         <span id="copyConfirm">✓ Copied!</span>
       </div>
 
@@ -129,7 +131,6 @@
         platform: null,
         isInAppBrowser: false,
         urls: {},
-        // Browser instructions are kept if needed later.
         browserInstructions: {
           Default: [
             "Tap the menu button (usually in the top or bottom right)",
@@ -142,12 +143,15 @@
       function detectEnvironment() {
         const ua = navigator.userAgent || navigator.vendor || window.opera;
 
-        // Detect in-app browsers using common identifiers.
-        STATE.isInAppBrowser = /FBAN|FBAV|Instagram|Line|Twitter|WhatsApp|WeChat|LinkedIn|Messenger/i.test(ua);
+        // Detect if in an in-app browser
+        STATE.isInAppBrowser =
+          /FBAN|FBAV|Instagram|Line|Twitter|WhatsApp|WeChat|LinkedIn|Messenger/i.test(ua);
+
         if (STATE.isInAppBrowser) {
           STATE.inAppBrowserType = "Default";
         }
 
+        // Determine platform
         if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) {
           STATE.platform = "ios";
         } else if (/Android/.test(ua)) {
@@ -156,9 +160,11 @@
           STATE.platform = "desktop";
         }
 
+        // Get UID from URL path
         const pathParts = window.location.pathname.split("/");
         STATE.uid = pathParts[pathParts.length - 1];
 
+        // Set up URLs
         STATE.urls = {
           deepLink: `calsocial://event/${STATE.uid}`,
           universalLink: `https://cal.social/event/${STATE.uid}`,
@@ -174,12 +180,15 @@
       }
 
       function showBrowserInstructions() {
-        document.getElementById("message").textContent = "You're using an internal app browser. To open this event:";
+        document.getElementById("message").textContent =
+          "You're using an internal app browser. To open this event:";
         const instructionsDiv = document.getElementById("browserInstructions");
         const instructionsList = document.getElementById("platformSpecificInstructions");
         instructionsList.innerHTML = "";
 
-        const instructions = STATE.browserInstructions[STATE.inAppBrowserType] || STATE.browserInstructions.Default;
+        const instructions =
+          STATE.browserInstructions[STATE.inAppBrowserType] ||
+          STATE.browserInstructions.Default;
         instructions.forEach((instruction) => {
           const li = document.createElement("li");
           li.textContent = instruction;
@@ -190,10 +199,12 @@
       }
 
       function showAppButtons() {
-        document.getElementById("message").textContent = "If calsocial didn't open automatically, please choose an option below:";
+        document.getElementById("message").textContent =
+          "If calsocial didn't open automatically, please choose an option below:";
         const appButtonsDiv = document.getElementById("appButtons");
         appButtonsDiv.style.display = "block";
 
+        // Bind button click events
         document.getElementById("openAppButton").addEventListener("click", openApp);
         document.getElementById("openStoreButton").addEventListener("click", redirectToStore);
       }
@@ -228,8 +239,13 @@
         }
       }
 
+      // Updated openApp() function to try the universal link first,
+      // then fall back to the deep link after a short delay.
       function openApp() {
-        window.location.href = STATE.urls.deepLink;
+        window.location.href = STATE.urls.universalLink;
+        setTimeout(() => {
+          window.location.href = STATE.urls.deepLink;
+        }, 500);
       }
 
       function redirectToStore() {

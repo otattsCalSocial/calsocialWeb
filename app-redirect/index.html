@@ -9,20 +9,20 @@
     />
     <title>calsocial event</title>
     <style>
-      /* Base styles and fonts */
       body {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
           Oxygen, Ubuntu, Cantarell, sans-serif;
-        margin: 0;
-        padding: 0;
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
         min-height: 100vh;
-        background: linear-gradient(135deg, #9b111e, #57100f);
-        color: #333;
+        margin: 0;
+        padding: 20px;
+        text-align: center;
+        background-color: #9b111e;
+        position: relative;
       }
-      /* App icon styling */
       .app-icon {
         width: 64px;
         height: 64px;
@@ -31,50 +31,36 @@
         left: 50%;
         transform: translateX(-50%);
       }
-      /* Main container styling */
       .container {
-        background: #fff;
-        border-radius: 16px;
-        padding: 30px 20px;
         max-width: 600px;
-        width: 90%;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        text-align: center;
-        position: relative;
+        width: 100%;
+        padding: 20px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        margin-top: -20px;
       }
-      /* Message styling */
-      .message {
-        font-size: 1.2em;
-        margin-bottom: 20px;
-      }
-      /* Error message styling */
-      .error-message {
-        background-color: #fdecea;
-        color: #d9534f;
-        border-radius: 8px;
-        padding: 10px;
-        margin: 15px 0;
-        display: none;
-      }
-      /* Button styling */
       .button {
         display: inline-block;
         padding: 12px 24px;
         background-color: #9b111e;
-        color: #fff;
+        color: white;
         text-decoration: none;
         border-radius: 8px;
         margin: 10px;
         font-weight: 600;
         border: none;
         cursor: pointer;
-        transition: background-color 0.3s, transform 0.2s;
+        transition: background-color 0.2s;
       }
       .button:hover {
         background-color: #7d0e18;
-        transform: translateY(-2px);
       }
-      /* Copy button and confirmation */
+      .message {
+        margin: 20px 0;
+        color: #333;
+        font-size: 1.1em;
+      }
       #copyButton {
         background: none;
         border: none;
@@ -83,31 +69,31 @@
         cursor: pointer;
         padding: 5px;
         margin: 5px;
-        font-size: 1em;
       }
       #copyConfirm {
         color: green;
         display: none;
         margin: 5px;
-        font-size: 1em;
       }
-      /* Browser instructions styling */
+      .error-message {
+        color: #e74c3c;
+        margin: 10px 0;
+        padding: 10px;
+        border-radius: 4px;
+        background-color: #fdf0ef;
+        display: none;
+      }
       .browser-instructions {
+        margin: 20px 0;
+        padding: 15px;
         background-color: #f8f9fa;
         border-radius: 8px;
-        padding: 15px;
         text-align: left;
-        margin: 20px 0;
-      }
-      .browser-instructions p {
-        margin: 0 0 10px;
-        font-weight: 600;
       }
       .browser-instructions li {
         margin: 10px 0;
         line-height: 1.5;
       }
-      /* App buttons container */
       .app-buttons {
         margin: 20px 0;
       }

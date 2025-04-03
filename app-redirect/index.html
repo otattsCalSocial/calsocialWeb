@@ -325,8 +325,10 @@
         } else if (STATE.platform === "android") {
           handleAndroid();
         } else {
-          // For desktop or other platforms, redirect to the universal link immediately.
-          window.location.href = STATE.urls.universalLink;
+          // For desktop or other platforms, display a message prompting the user to use a mobile device.
+          showError("Please open this link on a mobile device.");
+          document.getElementById("message").textContent =
+            "Unsupported platform";
         }
       }
 

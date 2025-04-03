@@ -74,39 +74,6 @@
         background-color: #7d0e18;
         transform: translateY(-2px);
       }
-      /* Copy button and confirmation */
-      #copyButton {
-        background: none;
-        border: none;
-        color: #3498db;
-        text-decoration: underline;
-        cursor: pointer;
-        padding: 5px;
-        margin: 5px;
-        font-size: 1em;
-      }
-      #copyConfirm {
-        color: green;
-        display: none;
-        margin: 5px;
-        font-size: 1em;
-      }
-      /* Browser instructions styling */
-      .browser-instructions {
-        background-color: #f8f9fa;
-        border-radius: 8px;
-        padding: 15px;
-        text-align: left;
-        margin: 20px 0;
-      }
-      .browser-instructions p {
-        margin: 0 0 10px;
-        font-weight: 600;
-      }
-      .browser-instructions li {
-        margin: 10px 0;
-        line-height: 1.5;
-      }
       /* App buttons container */
       .app-buttons {
         margin: 20px 0;
@@ -123,17 +90,7 @@
       <div class="message" id="message">Opening calsocial...</div>
       <div class="error-message" id="errorMessage"></div>
 
-      <!-- Browser Instructions Section -->
-      <div id="browserInstructions" style="display: none">
-        <div class="browser-instructions">
-          <p>Please open this page in your default browser:</p>
-          <ul id="platformSpecificInstructions"></ul>
-        </div>
-        <button class="button" id="copyButton" onclick="copyToClipboard()">
-          Copy Link
-        </button>
-        <span id="copyConfirm">✓ Copied!</span>
-      </div>
+      <!-- Browser Instructions Section Removed -->
 
       <!-- App Buttons Section -->
       <div id="appButtons" style="display: none" class="app-buttons">
@@ -148,13 +105,7 @@
         platform: null,
         isInAppBrowser: false,
         urls: {},
-        browserInstructions: {
-          Default: [
-            "Tap the menu button (usually in the top or bottom right)",
-            "Look for an option like 'Open in browser' or 'Open in Safari/Chrome'",
-            "You will be redirected to calsocial or prompted to download the app",
-          ],
-        },
+        // Removed browserInstructions property
       };
 
       function detectEnvironment() {
@@ -165,9 +116,7 @@
           /FBAN|FBAV|Instagram|Line|Twitter|WhatsApp|WeChat|LinkedIn|Messenger/i.test(
             ua
           );
-        if (STATE.isInAppBrowser) {
-          STATE.inAppBrowserType = "Default";
-        }
+        // Removed inAppBrowserType assignment as it was only used for browser instructions
 
         // Determine platform
         if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) {
@@ -185,7 +134,7 @@
         // Set up URLs
         STATE.urls = {
           deepLink: `calsocial://event/${STATE.uid}`,
-          universalLink: `https://cal.social/event/${STATE.uid}`,
+          universalLink: `https://cal.social/event/${STATE.uid}`, // Keep universal link for potential future use or direct opening attempts
           appStoreURL: "https://apps.apple.com/app/calsocial/id6738835548",
           playStoreURL:
             "https://play.google.com/store/apps/details?id=social.cal.calsocial",
@@ -196,28 +145,11 @@
         const errorElement = document.getElementById("errorMessage");
         errorElement.textContent = message;
         errorElement.style.display = "block";
+        // Also update the main message if showing an error, potentially
+        document.getElementById("message").textContent = "Error";
       }
 
-      function showBrowserInstructions() {
-        document.getElementById("message").textContent =
-          "You're using an internal app browser. To open this event:";
-        const instructionsDiv = document.getElementById("browserInstructions");
-        const instructionsList = document.getElementById(
-          "platformSpecificInstructions"
-        );
-        instructionsList.innerHTML = "";
-
-        const instructions =
-          STATE.browserInstructions[STATE.inAppBrowserType] ||
-          STATE.browserInstructions.Default;
-        instructions.forEach((instruction) => {
-          const li = document.createElement("li");
-          li.textContent = instruction;
-          instructionsList.appendChild(li);
-        });
-
-        instructionsDiv.style.display = "block";
-      }
+      // Removed showBrowserInstructions function
 
       function showAppButtons() {
         document.getElementById("message").textContent =
@@ -227,6 +159,8 @@
 
         // Bind button click events based on environment:
         if (STATE.isInAppBrowser) {
+          // For in-app browsers, attempting to open via deep link might be more direct
+          // if universal links don't work well within them. Let's keep trying deep link first.
           document
             .getElementById("openAppButton")
             .addEventListener("click", openAppInAppBrowser);
@@ -240,47 +174,27 @@
           .addEventListener("click", redirectToStore);
       }
 
-      async function copyToClipboard() {
-        try {
-          await navigator.clipboard.writeText(STATE.urls.universalLink);
-          const confirm = document.getElementById("copyConfirm");
-          confirm.style.display = "inline";
-          setTimeout(() => {
-            confirm.style.display = "none";
-          }, 2000);
-        } catch (err) {
-          const linkText = STATE.urls.universalLink;
-          const tempInput = document.createElement("input");
-          tempInput.value = linkText;
-          document.body.appendChild(tempInput);
-          tempInput.select();
-
-          try {
-            document.execCommand("copy");
-            const confirm = document.getElementById("copyConfirm");
-            confirm.style.display = "inline";
-            setTimeout(() => {
-              confirm.style.display = "none";
-            }, 2000);
-          } catch (err) {
-            showError(`Please copy this link manually: ${linkText}`);
-          }
-
-          document.body.removeChild(tempInput);
-        }
-      }
+      // Removed copyToClipboard function
 
       // For normal browsers: simply use the deep link.
       function openAppNormal() {
         window.location.href = STATE.urls.deepLink;
+        // Consider adding a timeout fallback to show buttons if deep link fails silently
+        setTimeout(() => {
+          // Check if the page is still visible (might not work reliably)
+          if (!document.hidden) {
+            showAppButtons(); // Show buttons if app didn't open after a delay
+          }
+        }, 2000); // 2 seconds delay
       }
 
-      // For in‑app browsers: try the universal link first, then fall back to the deep link.
+      // For in‑app browsers: try the deep link. Universal links often don't work well here.
       function openAppInAppBrowser() {
-        window.location.href = STATE.urls.universalLink;
-        setTimeout(() => {
-          window.location.href = STATE.urls.deepLink;
-        }, 500);
+        window.location.href = STATE.urls.deepLink;
+        // In-app browsers often block deep links, so show buttons immediately as fallback
+        // The logic already calls showAppButtons if isInAppBrowser is true, so this specific
+        // function doesn't need to call it again unless the logic changes.
+        // Let's keep the original flow where showAppButtons is called based on isInAppBrowser check.
       }
 
       function redirectToStore() {
@@ -289,26 +203,37 @@
         } else if (STATE.platform === "android") {
           window.location.href = STATE.urls.playStoreURL;
         } else {
-          window.location.href = STATE.urls.universalLink;
+          // Desktop users still can't use the app, but maybe redirect to a website?
+          // For now, just show an error or do nothing specific for store redirect.
+          showError(
+            "Please open this link on an iOS or Android device to download the app."
+          );
         }
       }
 
-      // When auto‑opening the app on non‑in‑app browsers, use the normal function.
       function handleIOS() {
         if (STATE.isInAppBrowser) {
+          // In-app browser detected, don't try auto-opening, just show options.
           showAppButtons();
+          document.getElementById("message").textContent = // Custom message for in-app browser
+            "To view this event, please open or download the calsocial app:";
         } else {
+          // Try opening directly via deep link first for normal browsers
           openAppNormal();
-          showAppButtons();
+          // The openAppNormal function now includes a fallback timeout to show buttons
         }
       }
 
       function handleAndroid() {
         if (STATE.isInAppBrowser) {
+          // In-app browser detected, don't try auto-opening, just show options.
           showAppButtons();
+          document.getElementById("message").textContent = // Custom message for in-app browser
+            "To view this event, please open or download the calsocial app:";
         } else {
+          // Try opening directly via deep link first for normal browsers
           openAppNormal();
-          showAppButtons();
+          // The openAppNormal function now includes a fallback timeout to show buttons
         }
       }
 

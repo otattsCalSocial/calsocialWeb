@@ -190,11 +190,14 @@
 
       // For in‑app browsers: try the deep link. Universal links often don't work well here.
       function openAppInAppBrowser() {
-        window.location.href = STATE.urls.deepLink;
-        // In-app browsers often block deep links, so show buttons immediately as fallback
-        // The logic already calls showAppButtons if isInAppBrowser is true, so this specific
-        // function doesn't need to call it again unless the logic changes.
-        // Let's keep the original flow where showAppButtons is called based on isInAppBrowser check.
+        if (STATE.platform === "ios") {
+          window.location.href = STATE.urls.universalLink;
+        } else {
+          window.location.href = STATE.urls.deepLink;
+        }
+        
+        // Wait to see if app opens
+        setTimeout(handleAppOpenFallback, 2500);
       }
 
       function redirectToStore() {

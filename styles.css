@@ -51,7 +51,8 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 90px 20px 20px;
+  /* Base padding top accounts for nav, bottom for potential footer overlap */
+  padding: 90px 20px 80px; /* Adjusted padding-top and added padding-bottom */
   width: 100%;
   box-sizing: border-box;
 }
@@ -61,8 +62,8 @@ body {
   align-items: center;
   text-align: center;
   gap: 10px;
-  height: calc(100vh - 70px); /* Full viewport height minus the nav height */
-  padding: 0 20px;
+  padding: 70px 20px 70px;
+  min-height: calc(100vh - 140px);
   box-sizing: border-box;
 }
 
@@ -96,10 +97,16 @@ p {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 15px;
+  flex-wrap: wrap; /* Allow buttons to wrap on very small screens if needed */
 }
 
-.appstore-button {
-  width: 150px;
+/* --- Combined Button Styling --- */
+.appstore-button,
+.googleplay-button {
+  width: 150px; /* Set a consistent base width */
+  height: auto; /* Maintain aspect ratio */
+  vertical-align: middle; /* Helps alignment */
 }
 
 /* Support and Privacy Pages */
@@ -108,6 +115,7 @@ p {
   max-width: 800px;
   margin: 0 auto;
   width: 100%;
+  /* Padding inherited from .container */
 }
 
 /* Support Form */
@@ -228,6 +236,7 @@ p {
   bottom: 0;
   left: 0;
   right: 0;
+  height: 60px; /* Give footer a defined height */
   padding: 10px 20px;
   background-color: #9b111e;
   display: flex;
@@ -235,6 +244,8 @@ p {
   align-items: center;
   color: #ffffff;
   font-size: 14px;
+  box-sizing: border-box;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .footer-content {
@@ -242,6 +253,8 @@ p {
   align-items: center;
   justify-content: space-between;
   width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .copyright {
@@ -249,38 +262,40 @@ p {
 }
 
 .instagram-icon {
-  width: 40px;
-  height: 40px;
+  width: 30px; /* Slightly smaller icon */
+  height: 30px;
   max-width: 100%;
+  display: block; /* Prevents potential spacing issues */
 }
 
 /* FAQ-specific overrides */
 .faq-container {
   /* Add extra margin to clear the fixed nav at the top */
-  margin-top: 100px;  
+  margin-top: 100px;
 
-  /* Add bottom margin to avoid overlap with a fixed footer (if your footer is fixed) */
-  margin-bottom: 80px;  
+  /* Add bottom margin to avoid overlap with a fixed footer */
+  margin-bottom: 80px;
 
   /* If you want to control max width on the FAQ page specifically */
-  max-width: 800px; 
+  max-width: 800px;
   box-sizing: border-box;
+  /* Padding inherited from .container */
 }
 
-/* Optionally, if the FAQ text needs consistent styling without affecting the rest of the site */
+/* Optionally, if the FAQ text needs consistent styling */
 .faq-container h1,
 .faq-container h2,
 .faq-container p,
 .faq-container li {
-  color: #ffffff;  /* or any color you prefer */
+  color: #ffffff;
 }
-
 
 /* Responsive Design */
 @supports (-webkit-touch-callout: none) {
-  .main-nav {
-    padding-top: 15px; /* Safari-specific padding adjustment */
-  }
+  /* Safari-specific padding adjustment if needed */
+  /* .main-nav {
+    padding-top: 15px;
+  } */
 }
 
 @media (max-width: 768px) {
@@ -297,8 +312,11 @@ p {
     padding: 20px;
   }
 
-  .appstore-button {
-    width: 120px;
+  /* --- Mobile Button Sizing --- */
+  .appstore-button,
+  .googleplay-button {
+    /* Target BOTH buttons */
+    width: 120px; /* Apply the SAME smaller width */
   }
 
   .app-icon {
@@ -306,11 +324,12 @@ p {
     height: 120px;
   }
 
-  .container {
-    height: calc(100vh - 70px); /* Ensure vertical centering */
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  /* Adjust home container padding for mobile */
+  .container.home-container {
+    padding: 70px 20px 70px; /* Keep consistent top/bottom padding */
+    min-height: calc(
+      100vh - 130px
+    ); /* Account for potentially smaller footer if needed */
   }
 }
 
@@ -325,20 +344,65 @@ p {
 
   .nav-links {
     gap: 10px;
+    justify-content: center; /* Center nav links on small screens */
   }
 
   .nav-links a {
-    padding: 6px 12px;
+    padding: 6px 10px; /* Slightly reduce padding */
     font-size: 14px;
   }
 
+  /* Adjust general container padding */
   .container {
-    padding: 0 15px;
-    height: calc(100vh - 70px);
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+
+  /* Adjust home container padding specifically */
+  .container.home-container {
+    padding-left: 15px;
+    padding-right: 15px;
   }
 
   .app-icon {
     width: 100px;
     height: 100px;
+  }
+
+  /* --- Optional: Even Smaller Mobile Button Sizing --- */
+  .appstore-button,
+  .googleplay-button {
+    width: 110px; /* Make slightly smaller if needed */
+    gap: 10px; /* Reduce gap between buttons */
+  }
+
+  .footer {
+    height: 50px; /* Slightly smaller footer */
+    padding: 5px 15px;
+  }
+
+  .footer-content {
+    flex-direction: column; /* Stack copyright and social */
+    gap: 5px;
+    text-align: center;
+  }
+
+  .copyright {
+    margin-right: 0;
+    font-size: 12px;
+  }
+
+  .instagram-icon {
+    width: 25px;
+    height: 25px;
+  }
+
+  /* Adjust container bottom padding for stacked footer */
+  .container {
+    padding-bottom: 70px; /* Ensure content clears smaller, stacked footer */
+  }
+  .container.home-container {
+    padding-bottom: 70px;
+    min-height: calc(100vh - 120px); /* nav (70) + footer (50) */
   }
 }

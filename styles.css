@@ -104,9 +104,10 @@ p {
 /* --- Combined Button Styling --- */
 .appstore-button,
 .googleplay-button {
-  width: 150px; /* Set a consistent base width */
-  height: auto; /* Maintain aspect ratio */
+  height: 50px; /* Set a consistent height */
+  width: auto; /* Allow width to adjust based on aspect ratio */
   vertical-align: middle; /* Helps alignment */
+  max-width: 100%; /* Prevent image from exceeding container width if aspect ratio makes it very wide */
 }
 
 /* Support and Privacy Pages */
@@ -316,7 +317,9 @@ p {
   .appstore-button,
   .googleplay-button {
     /* Target BOTH buttons */
-    width: 120px; /* Apply the SAME smaller width */
+    /* width: 120px; /* REMOVED */
+    height: 45px; /* Adjust height for medium screens */
+    width: auto; /* Keep width auto */
   }
 
   .app-icon {
@@ -372,8 +375,8 @@ p {
   /* --- Optional: Even Smaller Mobile Button Sizing --- */
   .appstore-button,
   .googleplay-button {
-    width: 110px; /* Make slightly smaller if needed */
-    gap: 10px; /* Reduce gap between buttons */
+    height: 40px; /* Adjust height for small screens */
+    width: auto; /* Keep width auto */
   }
 
   .footer {

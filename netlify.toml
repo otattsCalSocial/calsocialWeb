@@ -1,6 +1,6 @@
 # netlify.toml
 [build]
-  publish = "dist" # or your actual build output / static folder
+  publish = "." # or your actual build output / static folder
 
 [[edge_functions]]
   path = "/event/*"

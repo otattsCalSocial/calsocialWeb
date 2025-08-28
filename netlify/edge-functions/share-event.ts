@@ -37,7 +37,7 @@ export default async (request: Request) => {
 
     <!-- Open Graph for social previews -->
     <meta property="og:title" content="${safeTitle}" />
-    <meta property="og:description" content="Join this event on Calsocial!" />
+    <meta property="og:description" content="Join this event on calsocial!" />
     <meta property="og:image" content="https://cal.social/assets/smallLogo.png" />
     <meta property="og:url" content="https://cal.social/event/${safeUid}" />
     <meta property="og:type" content="website" />
@@ -45,7 +45,7 @@ export default async (request: Request) => {
     <!-- Optional: Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${safeTitle}" />
-    <meta name="twitter:description" content="Join this event on Calsocial!" />
+    <meta name="twitter:description" content="Join this event on calsocial!" />
     <meta name="twitter:image" content="https://cal.social/assets/smallLogo.png" />
 
     <style>

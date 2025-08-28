@@ -1,0 +1,7 @@
+# netlify.toml
+[build]
+  publish = "dist" # or your actual build output / static folder
+
+[[edge_functions]]
+  path = "/event/*"
+  function = "share-event"   # maps to /netlify/edge-functions/share-event.{ts,js}

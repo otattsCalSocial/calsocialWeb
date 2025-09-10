@@ -224,7 +224,7 @@ export default async (request: Request) => {
   return new Response(html, {
     headers: {
       "content-type": "text/html; charset=utf-8",
-      "cache-control": "public, max-age=120" // small cache for social crawlers
+      "cache-control": "public, max-age=120" // small cache for social crawlerss
     },
     status: 200
   });

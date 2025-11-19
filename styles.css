@@ -101,13 +101,13 @@ body {
   justify-content: center;
   align-items: center;
   position: relative;
-  height: 600px; /* Fixed height area for phones */
+  height: 550px; /* Fixed height area for phones */
   width: 100%;
-  max-width: 600px;
+  max-width: 550px;
 }
 
 .phone-mockup {
-  width: 260px;
+  width: 220px;
   border: 12px solid #2a2a2a;
   border-radius: 40px;
   overflow: hidden;
@@ -307,6 +307,7 @@ p {
   font-size: 14px;
   box-sizing: border-box;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 1000;
 }
 
 .footer-content {
@@ -415,7 +416,7 @@ p {
 
   /* Adjust home container padding for mobile */
   .container.home-container {
-    padding: 20px; /* Minimal padding */
+    padding: 20px 20px 80px; /* Minimal padding top/sides, extra bottom for footer */
     min-height: auto; /* Let content define height on mobile if it overflows */
     overflow: visible; /* Allow scroll on mobile */
   }

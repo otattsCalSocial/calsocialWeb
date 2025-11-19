@@ -51,54 +51,114 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  /* Base padding top accounts for nav, bottom for potential footer overlap */
-  padding: 90px 20px 80px; /* Adjusted padding-top and added padding-bottom */
+  padding: 90px 20px 80px;
   width: 100%;
   box-sizing: border-box;
 }
 
 .container.home-container {
+  padding: 0;
   justify-content: center;
   align-items: center;
-  text-align: center;
-  gap: 10px;
-  padding: 70px 20px 70px;
-  min-height: calc(100vh - 140px);
+  overflow: hidden; /* Try to prevent scroll on large screens */
+}
+
+.hero-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 80px 20px 60px; /* Top padding for nav */
+  gap: 40px;
   box-sizing: border-box;
+  height: 100%;
 }
 
 /* Home page specific */
-.app-icon {
-  width: 200px;
-  height: 200px;
-}
-
-.home-content {
+.hero-text {
+  flex: 1;
   display: flex;
   flex-direction: column;
+  align-items: flex-start; /* Left align text on desktop */
+  text-align: left;
+  max-width: 500px;
+  z-index: 10;
+}
+
+.app-icon {
+  width: 120px;
+  height: 120px;
+  margin-bottom: 20px;
+  border-radius: 24px; /* Soften icon edges */
+  box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+
+.hero-visuals {
+  flex: 1;
+  display: flex;
+  justify-content: center;
   align-items: center;
+  position: relative;
+  height: 600px; /* Fixed height area for phones */
+  width: 100%;
+  max-width: 600px;
+}
+
+.phone-mockup {
+  width: 260px;
+  border: 12px solid #2a2a2a;
+  border-radius: 40px;
+  overflow: hidden;
+  background: #000;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+  aspect-ratio: 9/19.5;
+  position: relative;
+  z-index: 2;
+  transition: transform 0.3s ease;
+}
+
+.phone-mockup img.screenshot {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Second phone styling */
+.phone-mockup.offset {
+  position: absolute;
+  right: 20px;
+  top: 40px;
+  z-index: 1;
+  transform: scale(0.95) rotate(5deg);
+  filter: brightness(0.8); /* Slightly darker for depth */
 }
 
 /* Typography */
 h1 {
-  font-size: 64px;
-  margin: 0;
+  font-size: 72px;
+  line-height: 1.1;
+  margin: 0 0 10px 0;
   color: #ffffff;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
 p {
-  font-size: 24px;
-  margin: 0 0 20px 0;
-  color: #ffffff;
+  font-size: 28px;
+  margin: 0 0 30px 0;
+  color: #f0f0f0;
+  font-weight: 300;
 }
 
 /* Download Section */
 .download-section {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 15px;
-  flex-wrap: wrap; /* Allow buttons to wrap on very small screens if needed */
+  flex-wrap: wrap;
 }
 
 /* --- Combined Button Styling --- */
@@ -299,6 +359,34 @@ p {
   } */
 }
 
+@media (max-width: 960px) {
+  .hero-wrapper {
+    flex-direction: column;
+    padding-top: 40px;
+    gap: 40px;
+  }
+
+  .hero-text {
+    align-items: center;
+    text-align: center;
+    max-width: 100%;
+  }
+
+  .download-section {
+    justify-content: center;
+  }
+
+  .hero-visuals {
+    height: 450px;
+    width: 100%;
+    margin-bottom: 40px;
+  }
+  
+  .phone-mockup {
+    width: 220px;
+  }
+}
+
 @media (max-width: 768px) {
   h1 {
     font-size: 48px;
@@ -316,8 +404,6 @@ p {
   /* --- Mobile Button Sizing --- */
   .appstore-button,
   .googleplay-button {
-    /* Target BOTH buttons */
-    /* width: 120px; /* REMOVED */
     height: 45px; /* Adjust height for medium screens */
     width: auto; /* Keep width auto */
   }
@@ -329,10 +415,14 @@ p {
 
   /* Adjust home container padding for mobile */
   .container.home-container {
-    padding: 70px 20px 70px; /* Keep consistent top/bottom padding */
-    min-height: calc(
-      100vh - 130px
-    ); /* Account for potentially smaller footer if needed */
+    padding: 20px; /* Minimal padding */
+    min-height: auto; /* Let content define height on mobile if it overflows */
+    overflow: visible; /* Allow scroll on mobile */
+  }
+  
+  .hero-wrapper {
+    height: auto; /* Allow it to grow */
+    padding-top: 90px;
   }
 }
 
@@ -361,12 +451,6 @@ p {
     padding-right: 15px;
   }
 
-  /* Adjust home container padding specifically */
-  .container.home-container {
-    padding-left: 15px;
-    padding-right: 15px;
-  }
-
   .app-icon {
     width: 100px;
     height: 100px;
@@ -380,13 +464,14 @@ p {
   }
 
   .footer {
-    height: 50px; /* Slightly smaller footer */
-    padding: 5px 15px;
+    height: auto; /* Allow expansion */
+    min-height: 50px;
+    padding: 10px 15px;
   }
 
   .footer-content {
     flex-direction: column; /* Stack copyright and social */
-    gap: 5px;
+    gap: 10px;
     text-align: center;
   }
 
@@ -400,12 +485,18 @@ p {
     height: 25px;
   }
 
-  /* Adjust container bottom padding for stacked footer */
-  .container {
-    padding-bottom: 70px; /* Ensure content clears smaller, stacked footer */
+  .hero-visuals {
+    height: 350px;
   }
-  .container.home-container {
-    padding-bottom: 70px;
-    min-height: calc(100vh - 120px); /* nav (70) + footer (50) */
+  
+  .phone-mockup {
+    width: 160px;
+    border-width: 8px;
+    border-radius: 24px;
+  }
+  
+  .phone-mockup.offset {
+    right: 0;
+    top: 20px;
   }
 }

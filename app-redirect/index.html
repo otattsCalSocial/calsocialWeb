@@ -3,97 +3,84 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      property="og:image"
-      content="https://cal.social/assets/smallLogo.png"
-    />
-    <title>calsocial event</title>
+
+    <!-- Basic OG (you will improve this later) -->
+    <meta property="og:image" content="https://cal.social/assets/smallLogo.png" />
+
+    <title>CalSocial Event</title>
+
     <style>
-      /* Base styles and fonts */
       body {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
           Oxygen, Ubuntu, Cantarell, sans-serif;
         margin: 0;
         padding: 0;
+        min-height: 100vh;
         display: flex;
         align-items: center;
         justify-content: center;
-        min-height: 100vh;
         background-color: #9b111e;
         color: #333;
       }
-      /* App icon styling */
-      .app-icon {
-        width: 64px;
-        height: 64px;
-        position: absolute;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-      }
-      /* Main container styling */
+
       .container {
         background: #fff;
         border-radius: 16px;
-        padding: 30px 25px;
-        max-width: 600px;
+        padding: 32px 24px;
+        max-width: 420px;
         width: 90%;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
         text-align: center;
-        position: relative;
       }
-      /* Message styling */
+
       .message {
-        font-size: 1.2em;
-        margin-bottom: 20px;
+        font-size: 1.1em;
+        margin-bottom: 24px;
       }
-      /* Error message styling */
+
       .error-message {
         background-color: #fdecea;
         color: #e74c3c;
         border-radius: 8px;
         padding: 10px;
-        margin: 15px 0;
+        margin-bottom: 16px;
         display: none;
       }
-      /* Button styling */
+
       .button {
-        display: inline-block;
-        padding: 12px 24px;
+        width: 100%;
+        padding: 14px;
         background-color: #9b111e;
         color: #fff;
-        text-decoration: none;
-        border-radius: 8px;
-        margin: 10px;
+        font-size: 1.1em;
         font-weight: 600;
         border: none;
+        border-radius: 10px;
         cursor: pointer;
-        transition: background-color 0.3s, transform 0.2s;
+        transition: background-color 0.2s, transform 0.15s;
       }
+
       .button:hover {
         background-color: #7d0e18;
-        transform: translateY(-2px);
+        transform: translateY(-1px);
       }
-      /* App buttons container */
-      .app-buttons {
-        margin: 20px 0;
-      }
-      .app-buttons .button {
-        width: 100%;
-        max-width: 200px;
+
+      .subtext {
+        margin-top: 10px;
+        font-size: 0.85em;
+        color: #666;
       }
     </style>
   </head>
+
   <body>
-    <img src="../assets/icon.png" alt="Calsocial Icon" class="app-icon" />
     <div class="container">
-      <div class="message" id="message">Opening calsocial...</div>
+      <div class="message" id="message">Opening event…</div>
       <div class="error-message" id="errorMessage"></div>
 
-      <!-- App Buttons Section -->
-      <div id="appButtons" style="display: none" class="app-buttons">
-        <button class="button" id="openStoreButton">Download calsocial</button>
-        <button class="button" id="openAppButton">Open calsocial</button>
+      <div id="actionArea" style="display: none">
+        <button class="button" id="joinEventButton">Join Event</button>
+        <div class="subtext">Free · Takes ~30 seconds</div>
       </div>
     </div>
 
@@ -108,13 +95,11 @@
       function detectEnvironment() {
         const ua = navigator.userAgent || navigator.vendor || window.opera;
 
-        // Detect if in-app browser
         STATE.isInAppBrowser =
           /FBAN|FBAV|Instagram|Line|Twitter|WhatsApp|WeChat|LinkedIn|Messenger/i.test(
             ua
           );
 
-        // Determine platform
         if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) {
           STATE.platform = "ios";
         } else if (/Android/.test(ua)) {
@@ -123,11 +108,9 @@
           STATE.platform = "desktop";
         }
 
-        // Get UID from URL path
         const pathParts = window.location.pathname.split("/");
         STATE.uid = pathParts[pathParts.length - 1];
 
-        // Set up URLs
         STATE.urls = {
           deepLink: `calsocial://event/${STATE.uid}`,
           universalLink: `https://cal.social/event/${STATE.uid}`,
@@ -137,49 +120,46 @@
         };
       }
 
-      function showError(message) {
-        const errorElement = document.getElementById("errorMessage");
-        errorElement.textContent = message;
-        errorElement.style.display = "block";
-        document.getElementById("message").textContent = "Error";
+      function showError(msg) {
+        const el = document.getElementById("errorMessage");
+        el.textContent = msg;
+        el.style.display = "block";
+        document.getElementById("message").textContent = "Something went wrong";
       }
 
-      function showAppButtons() {
+      function showJoinButton() {
         document.getElementById("message").textContent =
-          "To view this event, please download or open the calsocial app:";
-        const appButtonsDiv = document.getElementById("appButtons");
-        appButtonsDiv.style.display = "block";
+          "Tap below to join this event";
+        document.getElementById("actionArea").style.display = "block";
+
+        document
+          .getElementById("joinEventButton")
+          .addEventListener("click", handleJoinEvent);
+      }
+
+      function handleJoinEvent() {
+        if (STATE.platform === "desktop") {
+          showError("Please open this link on a mobile device.");
+          return;
+        }
 
         if (STATE.isInAppBrowser) {
-          document
-            .getElementById("openAppButton")
-            .addEventListener("click", openAppInAppBrowser);
-        } else {
-          document
-            .getElementById("openAppButton")
-            .addEventListener("click", openAppNormal);
-        }
-        document
-          .getElementById("openStoreButton")
-          .addEventListener("click", redirectToStore);
-      }
-
-      function openAppNormal() {
-        window.location.href = STATE.urls.deepLink;
-        setTimeout(() => {
-          if (!document.hidden) {
-            showAppButtons();
+          // In-app browsers
+          if (STATE.platform === "ios") {
+            window.location.href = STATE.urls.universalLink;
+          } else {
+            window.location.href = STATE.urls.deepLink;
           }
-        }, 2000);
-      }
-
-      function openAppInAppBrowser() {
-        if (STATE.platform === "ios") {
-          window.location.href = STATE.urls.universalLink;
         } else {
+          // Normal mobile browser
           window.location.href = STATE.urls.deepLink;
+
+          setTimeout(() => {
+            if (!document.hidden) {
+              redirectToStore();
+            }
+          }, 2000);
         }
-        setTimeout(showAppButtons, 2500);
       }
 
       function redirectToStore() {
@@ -187,48 +167,26 @@
           window.location.href = STATE.urls.appStoreURL;
         } else if (STATE.platform === "android") {
           window.location.href = STATE.urls.playStoreURL;
-        } else {
-          showError(
-            "Please open this link on an iOS or Android device to download the app."
-          );
         }
       }
 
-      // NEW: fetch the event title from your API
       async function fetchAndApplyEventTitle() {
         if (!STATE.uid) return;
+
         try {
-          const url = `https://api.cal.social/events/${encodeURIComponent(
-            STATE.uid
-          )}/title`;
-          const res = await fetch(url, { headers: { Accept: "text/plain" } });
+          const res = await fetch(
+            `https://api.cal.social/events/${encodeURIComponent(
+              STATE.uid
+            )}/title`,
+            { headers: { Accept: "text/plain" } }
+          );
+
           if (!res.ok) return;
+
           const title = (await res.text()).trim();
-          if (title) {
-            document.title = title;
-          }
-        } catch (e) {
-          // fallback silently
-        }
-      }
-
-      function handleIOS() {
-        if (STATE.isInAppBrowser) {
-          showAppButtons();
-          document.getElementById("message").textContent =
-            "To view this event, please download or open the calsocial app:";
-        } else {
-          openAppNormal();
-        }
-      }
-
-      function handleAndroid() {
-        if (STATE.isInAppBrowser) {
-          showAppButtons();
-          document.getElementById("message").textContent =
-            "To view this event, please download or open the calsocial app:";
-        } else {
-          openAppNormal();
+          if (title) document.title = title;
+        } catch {
+          // silent fallback
         }
       }
 
@@ -236,22 +194,12 @@
         detectEnvironment();
 
         if (!STATE.uid) {
-          showError("Error: Event ID is missing");
+          showError("Missing event ID");
           return;
         }
 
-        // Fetch and apply title here
         fetchAndApplyEventTitle();
-
-        if (STATE.platform === "ios") {
-          handleIOS();
-        } else if (STATE.platform === "android") {
-          handleAndroid();
-        } else {
-          showError("Please open this link on a mobile device.");
-          document.getElementById("message").textContent =
-            "Unsupported platform";
-        }
+        showJoinButton();
       }
 
       document.addEventListener("DOMContentLoaded", initialize);

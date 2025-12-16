@@ -8,38 +8,8 @@ export default async (request: Request) => {
   if (!match) return new Response("Not Found", { status: 404 });
 
   const uid = match[1];
-
-  // Fetch event details from your public API (AllowAnonymous endpoint)
-  let title = "calsocial event";
-
-
-  try {
-    const r = await fetch(`https://api.cal.social/events/byuid/${encodeURIComponent(uid)}`, {
-      headers: { Accept: "application/json" }
-    });
-    if (r.ok) {
-      const eventData = await r.json();
-      if (eventData?.title) title = eventData.title;
-
-
-    }
-  } catch {
-    // keep fallback
-
-
-
-
-
-
-
-
-
-
-
-  }
-
+  const title = "calsocial event";
   const safeTitle = escapeHtml(title);
-
   const safeUid = escapeHtml(uid);
 
   // Return your existing redirect page, but with server-rendered <title> + OG/Twitter tags.
@@ -178,20 +148,6 @@ export default async (request: Request) => {
         }
       }
 
-      // (Optional) JS title update for users after click; crawlers don't run JS
-      async function fetchAndApplyEventTitle() {
-        if (!STATE.uid) return;
-        try {
-          const url = \`https://api.cal.social/events/byuid/\${encodeURIComponent(STATE.uid)}\`;
-          const res = await fetch(url, { headers: { Accept: "application/json" } });
-          if (!res.ok) return;
-          const eventData = await res.json();
-          if (eventData?.title) {
-            document.title = eventData.title;
-          }
-        } catch (e) {}
-      }
-
       function handleIOS() {
         if (STATE.isInAppBrowser) {
           showAppButtons();
@@ -219,8 +175,6 @@ export default async (request: Request) => {
           showError("Error: Event ID is missing");
           return;
         }
-
-        fetchAndApplyEventTitle();
 
         if (STATE.platform === "ios") {
           handleIOS();

@@ -262,50 +262,6 @@
         }
       }
 
-      // Fetch and display dynamic event data (non-blocking, won't interfere with buttons)
-      async function fetchAndDisplayEventData() {
-        if (!STATE.uid) return;
-        
-        const dynamicContentDiv = document.getElementById("dynamicContent");
-        if (!dynamicContentDiv) return;
-
-        try {
-          // Fetch event details
-          const eventUrl = `https://api.cal.social/events/byuid/${encodeURIComponent(STATE.uid)}`;
-          const eventRes = await fetch(eventUrl, { headers: { Accept: "application/json" } });
-          
-          if (eventRes.ok) {
-            const eventData = await eventRes.json();
-            if (eventData?.title) {
-              document.title = eventData.title;
-              
-              // Display the event title in the dynamic content area
-              const div = document.createElement("div");
-              div.textContent = eventData.title;
-              dynamicContentDiv.innerHTML = `<h2>${div.innerHTML}</h2>`;
-              dynamicContentDiv.style.display = "block";
-            }
-          }
-
-          // You can add more API calls here to fetch additional data
-          // For example: description, date, location, etc.
-          // Example:
-          // const descUrl = `https://api.cal.social/events/${encodeURIComponent(STATE.uid)}/description`;
-          // const descRes = await fetch(descUrl, { headers: { Accept: "text/plain" } });
-          // if (descRes.ok) {
-          //   const description = (await descRes.text()).trim();
-          //   if (description) {
-          //     const descDiv = document.createElement("div");
-          //     descDiv.textContent = description;
-          //     dynamicContentDiv.innerHTML += `<p>${descDiv.innerHTML}</p>`;
-          //   }
-          // }
-
-        } catch (e) {
-          // Silently fail - don't break the page if API calls fail
-          console.error("Failed to fetch event data:", e);
-        }
-      }
 
       function initialize() {
         detectEnvironment();
@@ -314,9 +270,6 @@
           showError("Error: Event ID is missing");
           return;
         }
-
-        // Fetch and display dynamic data (non-blocking, won't break buttons)
-        fetchAndDisplayEventData();
 
         if (STATE.platform === "ios") {
           handleIOS();

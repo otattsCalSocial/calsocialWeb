@@ -8,21 +8,7 @@ export default async (request: Request) => {
   if (!match) return new Response("Not Found", { status: 404 });
 
   const uid = match[1];
-
-  // Fetch title from your public API (AllowAnonymous endpoint)
-  let title = "calsocial circle";
-  try {
-    const r = await fetch(`https://api.cal.social/circles/uid/${encodeURIComponent(uid)}/name`, {
-      headers: { Accept: "text/plain" }
-    });
-    if (r.ok) {
-      const t = (await r.text()).trim();
-      if (t) title = t;
-    }
-  } catch {
-    // keep fallback
-  }
-
+  const title = "calsocial circle";
   const safeTitle = escapeHtml(title);
   const safeUid = escapeHtml(uid);
 
@@ -162,20 +148,6 @@ export default async (request: Request) => {
         }
       }
 
-      // (Optional) JS title update for users after click; crawlers don't run JS
-      async function fetchAndApplyCircleTitle() {
-        if (!STATE.uid) return;
-        try {
-          const url = \`https://api.cal.social/circles/uid/\${encodeURIComponent(STATE.uid)}/name\`;
-          const res = await fetch(url, { headers: { Accept: "text/plain" } });
-          if (!res.ok) return;
-          const title = (await res.text()).trim();
-          if (title) {
-            document.title = title;
-          }
-        } catch (e) {}
-      }
-
       function handleIOS() {
         if (STATE.isInAppBrowser) {
           showAppButtons();
@@ -203,8 +175,6 @@ export default async (request: Request) => {
           showError("Error: Circle ID is missing");
           return;
         }
-
-        fetchAndApplyCircleTitle();
 
         if (STATE.platform === "ios") {
           handleIOS();

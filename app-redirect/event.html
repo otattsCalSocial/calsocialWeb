@@ -7,7 +7,7 @@
       property="og:image"
       content="https://cal.social/assets/smallLogo.png"
     />
-    <title>calsocial circle</title>
+    <title>calsocial event</title>
     <style>
       /* Base styles and fonts */
       body {
@@ -82,96 +82,11 @@
         width: 100%;
         max-width: 200px;
       }
-      /* Circle preview styles */
-      .circle-preview {
-        display: none;
-        text-align: center;
-        margin-bottom: 20px;
-      }
-      .circle-picture {
-        width: 100px;
-        height: 100px;
-        border-radius: 50%;
-        object-fit: cover;
-        margin: 0 auto 16px;
-        border: 1px solid #e0e0e0;
-      }
-      .circle-picture-placeholder {
-        width: 100px;
-        height: 100px;
-        border-radius: 50%;
-        background-color: #fff;
-        border: 1px solid #e0e0e0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 16px;
-        font-size: 48px;
-        color: #9B111E;
-      }
-      .circle-name {
-        font-size: 24px;
-        font-weight: bold;
-        color: #333;
-        margin-bottom: 4px;
-      }
-      .circle-member-count {
-        font-size: 14px;
-        color: #9B111E;
-        font-weight: 500;
-        margin-bottom: 12px;
-      }
-      .circle-description {
-        font-size: 15px;
-        color: #666;
-        line-height: 1.5;
-        text-align: center;
-        margin-bottom: 16px;
-      }
-      .event-details {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        margin-bottom: 16px;
-      }
-      .event-detail-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 15px;
-        color: #555;
-      }
-      .event-detail-item .icon {
-        width: 20px;
-        text-align: center;
-      }
-      .attendee-count {
-        font-size: 16px;
-        color: #9B111E;
-        font-weight: 500;
-        margin-top: 8px;
-      }
     </style>
   </head>
   <body>
     <img src="../assets/icon.png" alt="Calsocial Icon" class="app-icon" />
     <div class="container">
-      <!-- Circle Preview Section -->
-      <div id="circlePreview" class="circle-preview">
-        <img id="circlePicture" class="circle-picture" style="display: none;" />
-        <div id="circlePicturePlaceholder" class="circle-picture-placeholder" style="display: none;">👥</div>
-        <h1 id="circleName" class="circle-name"></h1>
-        <div id="circleMemberCount" class="circle-member-count"></div>
-        <p id="circleDescription" class="circle-description"></p>
-          </div>
-          <div class="event-detail-item" id="eventLocationContainer" style="display: none;">
-            <span class="icon">📍</span>
-            <span id="eventLocation"></span>
-          </div>
-        </div>
-        <div id="attendeeCount" class="attendee-count"></div>
-      </div>
-
       <div class="message" id="message">Opening calsocial...</div>
       <div class="error-message" id="errorMessage"></div>
 
@@ -214,8 +129,8 @@
 
         // Set up URLs
         STATE.urls = {
-          deepLink: `calsocial://circle/${STATE.uid}`,
-          universalLink: `https://cal.social/circle/${STATE.uid}`,
+          deepLink: `calsocial://event/${STATE.uid}`,
+          universalLink: `https://cal.social/event/${STATE.uid}`,
           appStoreURL: "https://apps.apple.com/app/calsocial/id6738835548",
           playStoreURL:
             "https://play.google.com/store/apps/details?id=social.cal.calsocial",
@@ -231,7 +146,7 @@
 
       function showAppButtons() {
         document.getElementById("message").textContent =
-          "To view this circle, please download or open the calsocial app:";
+          "To view this event, please download or open the calsocial app:";
         const appButtonsDiv = document.getElementById("appButtons");
         appButtonsDiv.style.display = "block";
 
@@ -279,69 +194,23 @@
         }
       }
 
-<<<<<<<< HEAD:app-redirect/event.html
-      // Fetch the event title from your API
+      // NEW: fetch the event title from your API
       async function fetchAndApplyEventTitle() {
-========
-      // Fetch and display circle preview
-      async function fetchAndDisplayCirclePreview() {
->>>>>>>> 370f38b62bd4304f435f88c6a8caa5d443631e43:app-redirect/circle.html
         if (!STATE.uid) return;
         try {
-          const url = `https://api.cal.social/circles/uid/${encodeURIComponent(STATE.uid)}/preview`;
-          const res = await fetch(url, { headers: { Accept: "application/json" } });
+          const url = `https://api.cal.social/events/${encodeURIComponent(
+            STATE.uid
+          )}/title`;
+          const res = await fetch(url, { headers: { Accept: "text/plain" } });
           if (!res.ok) return;
-<<<<<<<< HEAD:app-redirect/event.html
           const title = (await res.text()).trim();
           if (title) {
             document.title = title;
-            // TODO: Display event info here when ready
-            // document.getElementById("eventTitle").textContent = title;
-========
-          
-          const circle = await res.json();
-          
-          // Update page title
-          if (circle.name) {
-            document.title = circle.name;
-          }
-          
-          // Display circle preview
-          const previewDiv = document.getElementById("circlePreview");
-          if (previewDiv && circle.name) {
-            previewDiv.style.display = "block";
-            
-            // Circle picture
-            const circlePicture = document.getElementById("circlePicture");
-            const circlePicturePlaceholder = document.getElementById("circlePicturePlaceholder");
-            if (circle.pictureUrl) {
-              circlePicture.src = circle.pictureUrl;
-              circlePicture.style.display = "block";
-              circlePicturePlaceholder.style.display = "none";
-            } else {
-              circlePicture.style.display = "none";
-              circlePicturePlaceholder.style.display = "flex";
-            }
-            
-            // Circle name
-            document.getElementById("circleName").textContent = circle.name;
-            
-            // Member count
-            const memberCount = document.getElementById("circleMemberCount");
-            const count = circle.memberCount || 0;
-            memberCount.textContent = `${count} ${count === 1 ? 'member' : 'members'}`;
-            
-            // Circle description
-            const circleDescription = document.getElementById("circleDescription");
-            if (circle.description) {
-              circleDescription.textContent = circle.description;
-            } else {
-              circleDescription.style.display = "none";
-            }
->>>>>>>> 370f38b62bd4304f435f88c6a8caa5d443631e43:app-redirect/circle.html
+
+
           }
         } catch (e) {
-          console.error("Error fetching circle preview:", e);
+          // fallback silently
         }
       }
 
@@ -349,7 +218,7 @@
         if (STATE.isInAppBrowser) {
           showAppButtons();
           document.getElementById("message").textContent =
-            "To view this circle, please download or open the calsocial app:";
+            "To view this event, please download or open the calsocial app:";
         } else {
           openAppNormal();
         }
@@ -359,7 +228,7 @@
         if (STATE.isInAppBrowser) {
           showAppButtons();
           document.getElementById("message").textContent =
-            "To view this circle, please download or open the calsocial app:";
+            "To view this event, please download or open the calsocial app:";
         } else {
           openAppNormal();
         }
@@ -369,12 +238,12 @@
         detectEnvironment();
 
         if (!STATE.uid) {
-          showError("Error: Circle ID is missing");
+          showError("Error: Event ID is missing");
           return;
         }
 
-        // Fetch and display circle preview
-        fetchAndDisplayCirclePreview();
+        // Fetch and apply title here
+        fetchAndApplyEventTitle();
 
         if (STATE.platform === "ios") {
           handleIOS();
@@ -391,5 +260,3 @@
     </script>
   </body>
 </html>
-
-

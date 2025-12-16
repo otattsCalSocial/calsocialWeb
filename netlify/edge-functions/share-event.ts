@@ -13,6 +13,14 @@ export default async (request: Request) => {
   let title = "calsocial event";
   let description = "Join this event on calsocial!";
   let imageUrl = "https://cal.social/assets/smallLogo.png";
+  let emoji = "";
+  let startDate = "";
+  let endDate = "";
+  let location = "";
+  let city = "";
+  let attendeeCount = 0;
+  let openInvite = true;
+  
   try {
     const r = await fetch(`https://api.cal.social/events/${encodeURIComponent(uid)}/preview`, {
       headers: { Accept: "application/json" }
@@ -22,6 +30,13 @@ export default async (request: Request) => {
       if (event.title) title = event.title;
       if (event.description) description = event.description;
       if (event.imageUrl) imageUrl = event.imageUrl;
+      if (event.emoji) emoji = event.emoji;
+      if (event.startDate) startDate = event.startDate;
+      if (event.endDate) endDate = event.endDate;
+      if (event.location) location = event.location;
+      if (event.city) city = event.city;
+      if (event.attendeeCount !== undefined) attendeeCount = event.attendeeCount;
+      if (event.openInvite !== undefined) openInvite = event.openInvite;
     }
   } catch {
     // Fallback to title endpoint
@@ -41,6 +56,24 @@ export default async (request: Request) => {
   const safeTitle = escapeHtml(title);
   const safeDescription = escapeHtml(description);
   const safeUid = escapeHtml(uid);
+  const safeEmoji = escapeHtml(emoji);
+  const safeLocation = escapeHtml(location || city);
+  const safeImageUrl = escapeHtml(imageUrl);
+  
+  // Format date for display
+  let formattedDate = "";
+  if (startDate) {
+    try {
+      const start = new Date(startDate);
+      const end = endDate ? new Date(endDate) : null;
+      formattedDate = formatEventDateForDisplay(start, end);
+    } catch (e) {
+      formattedDate = "";
+    }
+  }
+  
+  // Determine if image should be shown
+  const showImage = imageUrl && !imageUrl.includes("smallLogo.png");
 
   // Return your existing redirect page, but with server-rendered <title> + OG/Twitter tags.
   const html = `<!DOCTYPE html>
@@ -81,11 +114,40 @@ export default async (request: Request) => {
       .button:hover { background-color: #7d0e18; transform: translateY(-2px); }
       .app-buttons { margin: 20px 0; }
       .app-buttons .button { width: 100%; max-width: 200px; }
+      /* Event preview styles */
+      .event-preview { display: none; text-align: left; margin-bottom: 20px; }
+      .event-header-image { width: 100%; max-height: 300px; object-fit: cover; border-radius: 12px; margin-bottom: 16px; }
+      .event-emoji { font-size: 48px; margin-bottom: 12px; }
+      .event-title { font-size: 28px; font-weight: bold; color: #333; margin-bottom: 8px; line-height: 1.2; }
+      .event-description { font-size: 16px; color: #666; line-height: 1.5; margin-bottom: 16px; }
+      .event-details { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+      .event-detail-item { display: flex; align-items: center; gap: 8px; font-size: 15px; color: #555; }
+      .event-detail-item .icon { width: 20px; text-align: center; }
+      .attendee-count { font-size: 16px; color: #9B111E; font-weight: 500; margin-top: 8px; }
     </style>
   </head>
   <body>
     <img src="../assets/icon.png" alt="Calsocial Icon" class="app-icon" />
     <div class="container">
+      <!-- Event Preview Section -->
+      <div id="eventPreview" class="event-preview" style="${title && title !== 'calsocial event' ? 'display: block;' : 'display: none;'}">
+        ${showImage ? `<img id="eventImage" class="event-header-image" src="${safeImageUrl}" />` : ''}
+        ${emoji ? `<div id="eventEmoji" class="event-emoji">${safeEmoji}</div>` : '<div id="eventEmoji" class="event-emoji" style="display: none;"></div>'}
+        <h1 id="eventTitle" class="event-title">${safeTitle}</h1>
+        ${description ? `<p id="eventDescription" class="event-description">${safeDescription}</p>` : '<p id="eventDescription" class="event-description" style="display: none;"></p>'}
+        <div class="event-details">
+          ${formattedDate ? `<div class="event-detail-item">
+            <span class="icon">📅</span>
+            <span id="eventDate">${formattedDate}</span>
+          </div>` : ''}
+          ${safeLocation ? `<div class="event-detail-item" id="eventLocationContainer">
+            <span class="icon">📍</span>
+            <span id="eventLocation">${safeLocation}</span>
+          </div>` : ''}
+        </div>
+        <div id="attendeeCount" class="attendee-count">${attendeeCount > 0 ? `${attendeeCount} ${attendeeCount === 1 ? 'person' : 'people'} ${attendeeCount === 1 ? 'is' : 'are'} ${openInvite ? 'going' : 'invited'}` : 'Be the first to join!'}</div>
+      </div>
+
       <div class="message" id="message">Opening calsocial...</div>
       <div class="error-message" id="errorMessage"></div>
 
@@ -193,22 +255,44 @@ export default async (request: Request) => {
       }
 
       function handleIOS() {
+        // Show preview first, then handle redirect
+        showEventPreview();
         if (STATE.isInAppBrowser) {
           showAppButtons();
           document.getElementById("message").textContent =
             "To view this event, please download or open the calsocial app:";
         } else {
-          openAppNormal();
+          // Delay redirect to show preview
+          setTimeout(() => {
+            openAppNormal();
+          }, 1500);
         }
       }
 
       function handleAndroid() {
+        // Show preview first, then handle redirect
+        showEventPreview();
         if (STATE.isInAppBrowser) {
           showAppButtons();
           document.getElementById("message").textContent =
             "To view this event, please download or open the calsocial app:";
         } else {
-          openAppNormal();
+          // Delay redirect to show preview
+          setTimeout(() => {
+            openAppNormal();
+          }, 1500);
+        }
+      }
+
+      // Show event preview if available
+      function showEventPreview() {
+        const previewDiv = document.getElementById("eventPreview");
+        if (previewDiv && document.getElementById("eventTitle").textContent !== "calsocial event") {
+          previewDiv.style.display = "block";
+          const eventImage = document.getElementById("eventImage");
+          if (eventImage.src && !eventImage.src.includes("smallLogo.png")) {
+            eventImage.style.display = "block";
+          }
         }
       }
 
@@ -220,15 +304,116 @@ export default async (request: Request) => {
           return;
         }
 
-        fetchAndApplyEventTitle();
+        // Show preview immediately if data is already in HTML
+        showEventPreview();
+        
+        // Also try to fetch and update if needed
+        fetchAndDisplayEventPreview().then(() => {
+          // After preview loads, show it
+          showEventPreview();
+        });
 
         if (STATE.platform === "ios") {
           handleIOS();
         } else if (STATE.platform === "android") {
           handleAndroid();
         } else {
-          showError("Please open this link on a mobile device.");
-          document.getElementById("message").textContent = "Unsupported platform";
+          // Desktop - show preview and buttons
+          showEventPreview();
+          showAppButtons();
+          document.getElementById("message").textContent =
+            "To view this event, please download or open the calsocial app:";
+        }
+      }
+      
+      // Fetch and display event preview (client-side fallback/update)
+      async function fetchAndDisplayEventPreview() {
+        if (!STATE.uid) return;
+        try {
+          const url = \`https://api.cal.social/events/\${encodeURIComponent(STATE.uid)}/preview\`;
+          const res = await fetch(url, { headers: { Accept: "application/json" } });
+          if (!res.ok) return;
+          
+          const event = await res.json();
+          const previewDiv = document.getElementById("eventPreview");
+          if (previewDiv && event.title) {
+            previewDiv.style.display = "block";
+            
+            const eventImage = document.getElementById("eventImage");
+            if (event.imageUrl) {
+              eventImage.src = event.imageUrl;
+              eventImage.style.display = "block";
+            }
+            
+            const eventEmoji = document.getElementById("eventEmoji");
+            if (event.emoji) {
+              eventEmoji.textContent = event.emoji;
+              eventEmoji.style.display = "block";
+            } else {
+              eventEmoji.style.display = "none";
+            }
+            
+            document.getElementById("eventTitle").textContent = event.title;
+            
+            const eventDescription = document.getElementById("eventDescription");
+            if (event.description) {
+              eventDescription.textContent = event.description;
+              eventDescription.style.display = "block";
+            } else {
+              eventDescription.style.display = "none";
+            }
+            
+            const startDate = new Date(event.startDate);
+            const endDate = event.endDate ? new Date(event.endDate) : null;
+            document.getElementById("eventDate").textContent = formatEventDate(startDate, endDate);
+            
+            const locationContainer = document.getElementById("eventLocationContainer");
+            const location = event.location || event.city;
+            if (location) {
+              document.getElementById("eventLocation").textContent = location;
+              locationContainer.style.display = "flex";
+            }
+            
+            const attendeeCount = document.getElementById("attendeeCount");
+            const count = event.attendeeCount || 0;
+            if (count > 0) {
+              attendeeCount.textContent = \`\${count} \${count === 1 ? 'person' : 'people'} \${count === 1 ? 'is' : 'are'} \${event.openInvite ? 'going' : 'invited'}\`;
+            } else {
+              attendeeCount.textContent = "Be the first to join!";
+            }
+          }
+        } catch (e) {
+          console.error("Error fetching event preview:", e);
+        }
+      }
+      
+      function formatEventDate(startDate, endDate) {
+        const options = { 
+          weekday: 'long', 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit'
+        };
+        
+        if (endDate && endDate.getTime() !== startDate.getTime()) {
+          const startStr = startDate.toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            month: 'long', 
+            day: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit'
+          });
+          const endStr = endDate.toLocaleDateString('en-US', { 
+            month: 'long', 
+            day: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit'
+          });
+          return \`\${startStr} - \${endStr}\`;
+        } else {
+          return startDate.toLocaleDateString('en-US', options);
         }
       }
 
@@ -250,4 +435,34 @@ function escapeHtml(s: string) {
   return s.replace(/[&<>"']/g, (c) => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
   }[c]!));
+}
+
+function formatEventDateForDisplay(startDate: Date, endDate: Date | null): string {
+  const options: Intl.DateTimeFormatOptions = { 
+    weekday: 'long', 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit'
+  };
+  
+  if (endDate && endDate.getTime() !== startDate.getTime()) {
+    const startStr = startDate.toLocaleDateString('en-US', { 
+      weekday: 'long', 
+      month: 'long', 
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit'
+    });
+    const endStr = endDate.toLocaleDateString('en-US', { 
+      month: 'long', 
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit'
+    });
+    return `${startStr} - ${endStr}`;
+  } else {
+    return startDate.toLocaleDateString('en-US', options);
+  }
 }

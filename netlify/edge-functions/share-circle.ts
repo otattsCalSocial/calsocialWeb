@@ -13,6 +13,9 @@ export default async (request: Request) => {
   let title = "calsocial circle";
   let description = "Join this circle on calsocial!";
   let imageUrl = "https://cal.social/assets/smallLogo.png";
+  let memberCount = 0;
+  let pictureUrl = "";
+  
   try {
     const r = await fetch(`https://api.cal.social/circles/uid/${encodeURIComponent(uid)}/preview`, {
       headers: { Accept: "application/json" }
@@ -21,7 +24,11 @@ export default async (request: Request) => {
       const circle = await r.json();
       if (circle.name) title = circle.name;
       if (circle.description) description = circle.description;
-      if (circle.pictureUrl) imageUrl = circle.pictureUrl;
+      if (circle.pictureUrl) {
+        imageUrl = circle.pictureUrl;
+        pictureUrl = circle.pictureUrl;
+      }
+      if (circle.memberCount !== undefined) memberCount = circle.memberCount;
     }
   } catch {
     // Fallback to name endpoint
@@ -41,6 +48,8 @@ export default async (request: Request) => {
   const safeTitle = escapeHtml(title);
   const safeDescription = escapeHtml(description);
   const safeUid = escapeHtml(uid);
+  const safePictureUrl = escapeHtml(pictureUrl);
+  const showPicture = pictureUrl && pictureUrl.length > 0;
 
   // Return your existing redirect page, but with server-rendered <title> + OG/Twitter tags.
   const html = `<!DOCTYPE html>
@@ -81,11 +90,26 @@ export default async (request: Request) => {
       .button:hover { background-color: #7d0e18; transform: translateY(-2px); }
       .app-buttons { margin: 20px 0; }
       .app-buttons .button { width: 100%; max-width: 200px; }
+      /* Circle preview styles */
+      .circle-preview { display: none; text-align: center; margin-bottom: 20px; }
+      .circle-picture { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin: 0 auto 16px; border: 1px solid #e0e0e0; }
+      .circle-picture-placeholder { width: 100px; height: 100px; border-radius: 50%; background-color: #fff; border: 1px solid #e0e0e0; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 48px; color: #9B111E; }
+      .circle-name { font-size: 24px; font-weight: bold; color: #333; margin-bottom: 4px; }
+      .circle-member-count { font-size: 14px; color: #9B111E; font-weight: 500; margin-bottom: 12px; }
+      .circle-description { font-size: 15px; color: #666; line-height: 1.5; text-align: center; margin-bottom: 16px; }
     </style>
   </head>
   <body>
     <img src="../assets/icon.png" alt="Calsocial Icon" class="app-icon" />
     <div class="container">
+      <!-- Circle Preview Section -->
+      <div id="circlePreview" class="circle-preview" style="${title && title !== 'calsocial circle' ? 'display: block;' : 'display: none;'}">
+        ${showPicture ? `<img id="circlePicture" class="circle-picture" src="${safePictureUrl}" />` : '<div id="circlePicturePlaceholder" class="circle-picture-placeholder">👥</div>'}
+        <h1 id="circleName" class="circle-name">${safeTitle}</h1>
+        <div id="circleMemberCount" class="circle-member-count">${memberCount} ${memberCount === 1 ? 'member' : 'members'}</div>
+        ${description ? `<p id="circleDescription" class="circle-description">${safeDescription}</p>` : '<p id="circleDescription" class="circle-description" style="display: none;"></p>'}
+      </div>
+
       <div class="message" id="message">Opening calsocial...</div>
       <div class="error-message" id="errorMessage"></div>
 
@@ -178,37 +202,89 @@ export default async (request: Request) => {
         }
       }
 
-      // (Optional) JS title update for users after click; crawlers don't run JS
-      async function fetchAndApplyCircleTitle() {
-        if (!STATE.uid) return;
-        try {
-          const url = \`https://api.cal.social/circles/uid/\${encodeURIComponent(STATE.uid)}/name\`;
-          const res = await fetch(url, { headers: { Accept: "text/plain" } });
-          if (!res.ok) return;
-          const title = (await res.text()).trim();
-          if (title) {
-            document.title = title;
-          }
-        } catch (e) {}
-      }
 
       function handleIOS() {
+        // Show preview first, then handle redirect
+        showCirclePreview();
         if (STATE.isInAppBrowser) {
           showAppButtons();
           document.getElementById("message").textContent =
             "To view this circle, please download or open the calsocial app:";
         } else {
-          openAppNormal();
+          // Delay redirect to show preview
+          setTimeout(() => {
+            openAppNormal();
+          }, 1500);
         }
       }
 
       function handleAndroid() {
+        // Show preview first, then handle redirect
+        showCirclePreview();
         if (STATE.isInAppBrowser) {
           showAppButtons();
           document.getElementById("message").textContent =
             "To view this circle, please download or open the calsocial app:";
         } else {
-          openAppNormal();
+          // Delay redirect to show preview
+          setTimeout(() => {
+            openAppNormal();
+          }, 1500);
+        }
+      }
+
+      // Show circle preview if available
+      function showCirclePreview() {
+        const previewDiv = document.getElementById("circlePreview");
+        if (previewDiv && document.getElementById("circleName").textContent !== "calsocial circle") {
+          previewDiv.style.display = "block";
+        }
+      }
+      
+      // Fetch and display circle preview (client-side fallback/update)
+      async function fetchAndDisplayCirclePreview() {
+        if (!STATE.uid) return;
+        try {
+          const url = \`https://api.cal.social/circles/uid/\${encodeURIComponent(STATE.uid)}/preview\`;
+          const res = await fetch(url, { headers: { Accept: "application/json" } });
+          if (!res.ok) return;
+          
+          const circle = await res.json();
+          const previewDiv = document.getElementById("circlePreview");
+          if (previewDiv && circle.name) {
+            previewDiv.style.display = "block";
+            
+            const circlePicture = document.getElementById("circlePicture");
+            const circlePicturePlaceholder = document.getElementById("circlePicturePlaceholder");
+            if (circle.pictureUrl) {
+              if (circlePicture) {
+                circlePicture.src = circle.pictureUrl;
+                circlePicture.style.display = "block";
+              }
+              if (circlePicturePlaceholder) {
+                circlePicturePlaceholder.style.display = "none";
+              }
+            } else {
+              if (circlePicture) circlePicture.style.display = "none";
+              if (circlePicturePlaceholder) circlePicturePlaceholder.style.display = "flex";
+            }
+            
+            document.getElementById("circleName").textContent = circle.name;
+            
+            const memberCount = document.getElementById("circleMemberCount");
+            const count = circle.memberCount || 0;
+            memberCount.textContent = \`\${count} \${count === 1 ? 'member' : 'members'}\`;
+            
+            const circleDescription = document.getElementById("circleDescription");
+            if (circle.description) {
+              circleDescription.textContent = circle.description;
+              circleDescription.style.display = "block";
+            } else {
+              circleDescription.style.display = "none";
+            }
+          }
+        } catch (e) {
+          console.error("Error fetching circle preview:", e);
         }
       }
 
@@ -220,15 +296,25 @@ export default async (request: Request) => {
           return;
         }
 
-        fetchAndApplyCircleTitle();
+        // Show preview immediately if data is already in HTML
+        showCirclePreview();
+        
+        // Also try to fetch and update if needed
+        fetchAndDisplayCirclePreview().then(() => {
+          // After preview loads, show it
+          showCirclePreview();
+        });
 
         if (STATE.platform === "ios") {
           handleIOS();
         } else if (STATE.platform === "android") {
           handleAndroid();
         } else {
-          showError("Please open this link on a mobile device.");
-          document.getElementById("message").textContent = "Unsupported platform";
+          // Desktop - show preview and buttons
+          showCirclePreview();
+          showAppButtons();
+          document.getElementById("message").textContent =
+            "To view this circle, please download or open the calsocial app:";
         }
       }
 

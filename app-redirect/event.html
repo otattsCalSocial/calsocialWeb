@@ -90,6 +90,8 @@
       <div class="message" id="message">Opening calsocial...</div>
       <div class="error-message" id="errorMessage"></div>
 
+      <!-- Browser Instructions Section Removed -->
+
       <!-- App Buttons Section -->
       <div id="appButtons" style="display: none" class="app-buttons">
         <button class="button" id="openStoreButton">Download calsocial</button>
@@ -103,16 +105,18 @@
         platform: null,
         isInAppBrowser: false,
         urls: {},
+        // Removed browserInstructions property
       };
 
       function detectEnvironment() {
         const ua = navigator.userAgent || navigator.vendor || window.opera;
 
-        // Detect if in-app browser
+        // Detect if in an in‑app browser
         STATE.isInAppBrowser =
           /FBAN|FBAV|Instagram|Line|Twitter|WhatsApp|WeChat|LinkedIn|Messenger/i.test(
             ua
           );
+        // Removed inAppBrowserType assignment as it was only used for browser instructions
 
         // Determine platform
         if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) {
@@ -130,7 +134,7 @@
         // Set up URLs
         STATE.urls = {
           deepLink: `calsocial://event/${STATE.uid}`,
-          universalLink: `https://cal.social/event/${STATE.uid}`,
+          universalLink: `https://cal.social/event/${STATE.uid}`, // Keep universal link for potential future use or direct opening attempts
           appStoreURL: "https://apps.apple.com/app/calsocial/id6738835548",
           playStoreURL:
             "https://play.google.com/store/apps/details?id=social.cal.calsocial",
@@ -141,8 +145,11 @@
         const errorElement = document.getElementById("errorMessage");
         errorElement.textContent = message;
         errorElement.style.display = "block";
+        // Also update the main message if showing an error, potentially
         document.getElementById("message").textContent = "Error";
       }
+
+      // Removed showBrowserInstructions function
 
       function showAppButtons() {
         document.getElementById("message").textContent =
@@ -150,7 +157,10 @@
         const appButtonsDiv = document.getElementById("appButtons");
         appButtonsDiv.style.display = "block";
 
+        // Bind button click events based on environment:
         if (STATE.isInAppBrowser) {
+          // For in-app browsers, attempting to open via deep link might be more direct
+          // if universal links don't work well within them. Let's keep trying deep link first.
           document
             .getElementById("openAppButton")
             .addEventListener("click", openAppInAppBrowser);
@@ -164,22 +174,30 @@
           .addEventListener("click", redirectToStore);
       }
 
+      // Removed copyToClipboard function
+
+      // For normal browsers: simply use the deep link.
       function openAppNormal() {
         window.location.href = STATE.urls.deepLink;
+        // Consider adding a timeout fallback to show buttons if deep link fails silently
         setTimeout(() => {
+          // Check if the page is still visible (might not work reliably)
           if (!document.hidden) {
-            showAppButtons();
+            showAppButtons(); // Show buttons if app didn't open after a delay
           }
-        }, 2000);
+        }, 2000); // 2 seconds delay
       }
 
+      // For in‑app browsers: try the deep link. Universal links often don't work well here.
       function openAppInAppBrowser() {
         if (STATE.platform === "ios") {
           window.location.href = STATE.urls.universalLink;
         } else {
           window.location.href = STATE.urls.deepLink;
         }
-        setTimeout(showAppButtons, 2500);
+        
+        // Wait to see if app opens
+        setTimeout(handleAppOpenFallback, 2500);
       }
 
       function redirectToStore() {
@@ -188,49 +206,37 @@
         } else if (STATE.platform === "android") {
           window.location.href = STATE.urls.playStoreURL;
         } else {
+          // Desktop users still can't use the app, but maybe redirect to a website?
+          // For now, just show an error or do nothing specific for store redirect.
           showError(
             "Please open this link on an iOS or Android device to download the app."
           );
         }
       }
 
-      // NEW: fetch the event title from your API
-      async function fetchAndApplyEventTitle() {
-        if (!STATE.uid) return;
-        try {
-          const url = `https://api.cal.social/events/${encodeURIComponent(
-            STATE.uid
-          )}/title`;
-          const res = await fetch(url, { headers: { Accept: "text/plain" } });
-          if (!res.ok) return;
-          const title = (await res.text()).trim();
-          if (title) {
-            document.title = title;
-
-
-          }
-        } catch (e) {
-          // fallback silently
-        }
-      }
-
       function handleIOS() {
         if (STATE.isInAppBrowser) {
+          // In-app browser detected, don't try auto-opening, just show options.
           showAppButtons();
-          document.getElementById("message").textContent =
+          document.getElementById("message").textContent = // Custom message for in-app browser
             "To view this event, please download or open the calsocial app:";
         } else {
+          // Try opening directly via deep link first for normal browsers
           openAppNormal();
+          // The openAppNormal function now includes a fallback timeout to show buttons
         }
       }
 
       function handleAndroid() {
         if (STATE.isInAppBrowser) {
+          // In-app browser detected, don't try auto-opening, just show options.
           showAppButtons();
-          document.getElementById("message").textContent =
+          document.getElementById("message").textContent = // Custom message for in-app browser
             "To view this event, please download or open the calsocial app:";
         } else {
+          // Try opening directly via deep link first for normal browsers
           openAppNormal();
+          // The openAppNormal function now includes a fallback timeout to show buttons
         }
       }
 
@@ -242,14 +248,12 @@
           return;
         }
 
-        // Fetch and apply title here
-        fetchAndApplyEventTitle();
-
         if (STATE.platform === "ios") {
           handleIOS();
         } else if (STATE.platform === "android") {
           handleAndroid();
         } else {
+          // For desktop or other platforms, display a message prompting the user to use a mobile device.
           showError("Please open this link on a mobile device.");
           document.getElementById("message").textContent =
             "Unsupported platform";

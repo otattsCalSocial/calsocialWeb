@@ -11,45 +11,20 @@ export default async (request: Request) => {
 
   // Fetch title from your public API (AllowAnonymous endpoint)
   let title = "calsocial circle";
-  let description = "Join this circle on calsocial!";
-  let imageUrl = "https://cal.social/assets/smallLogo.png";
-  let memberCount = 0;
-  let pictureUrl = "";
-  
   try {
-    const r = await fetch(`https://api.cal.social/circles/uid/${encodeURIComponent(uid)}/preview`, {
-      headers: { Accept: "application/json" }
+    const r = await fetch(`https://api.cal.social/circles/uid/${encodeURIComponent(uid)}/name`, {
+      headers: { Accept: "text/plain" }
     });
     if (r.ok) {
-      const circle = await r.json();
-      if (circle.name) title = circle.name;
-      if (circle.description) description = circle.description;
-      if (circle.pictureUrl) {
-        imageUrl = circle.pictureUrl;
-        pictureUrl = circle.pictureUrl;
-      }
-      if (circle.memberCount !== undefined) memberCount = circle.memberCount;
+      const t = (await r.text()).trim();
+      if (t) title = t;
     }
   } catch {
-    // Fallback to name endpoint
-    try {
-      const r = await fetch(`https://api.cal.social/circles/uid/${encodeURIComponent(uid)}/name`, {
-        headers: { Accept: "text/plain" }
-      });
-      if (r.ok) {
-        const t = (await r.text()).trim();
-        if (t) title = t;
-      }
-    } catch {
-      // keep fallback
-    }
+    // keep fallback
   }
 
   const safeTitle = escapeHtml(title);
-  const safeDescription = escapeHtml(description);
   const safeUid = escapeHtml(uid);
-  const safePictureUrl = escapeHtml(pictureUrl);
-  const showPicture = pictureUrl && pictureUrl.length > 0;
 
   // Return your existing redirect page, but with server-rendered <title> + OG/Twitter tags.
   const html = `<!DOCTYPE html>
@@ -62,25 +37,46 @@ export default async (request: Request) => {
 
     <!-- Open Graph for social previews -->
     <meta property="og:title" content="${safeTitle}" />
+    <meta property="og:description" content="Join this circle on calsocial!" />
+    <meta property="og:image" content="https://cal.social/assets/smallLogo.png" />
     <meta property="og:url" content="https://cal.social/circle/${safeUid}" />
     <meta property="og:type" content="website" />
 
     <!-- Optional: Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${safeTitle}" />
+    <meta name="twitter:description" content="Join this circle on calsocial!" />
+    <meta name="twitter:image" content="https://cal.social/assets/smallLogo.png" />
 
     <style>
+      /* --- your existing CSS unchanged --- */
       body {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        margin: 0; padding: 0; display: flex; align-items: center; justify-content: center;
+        min-height: 100vh; background-color: #9b111e; color: #333;
       }
+      .app-icon { width: 64px; height: 64px; position: absolute; top: 20px; left: 50%; transform: translateX(-50%); }
+      .container { background: #fff; border-radius: 16px; padding: 30px 25px; max-width: 600px; width: 90%;
+        box-shadow: 0 4px 20px rgba(0,0,0,.1); text-align: center; position: relative; }
+      .message { font-size: 1.2em; margin-bottom: 20px; }
+      .error-message { background-color: #fdecea; color: #e74c3c; border-radius: 8px; padding: 10px; margin: 15px 0; display: none; }
+      .button { display: inline-block; padding: 12px 24px; background-color: #9b111e; color: #fff; text-decoration: none;
+        border-radius: 8px; margin: 10px; font-weight: 600; border: none; cursor: pointer; transition: background-color .3s, transform .2s; }
+      .button:hover { background-color: #7d0e18; transform: translateY(-2px); }
+      .app-buttons { margin: 20px 0; }
+      .app-buttons .button { width: 100%; max-width: 200px; }
     </style>
   </head>
   <body>
     <img src="../assets/icon.png" alt="Calsocial Icon" class="app-icon" />
     <div class="container">
+      <div class="message" id="message">Opening calsocial...</div>
       <div class="error-message" id="errorMessage"></div>
-    </div>
-    
+
+      <!-- App Buttons Section -->
+      <div id="appButtons" style="display: none" class="app-buttons">
+        <button class="button" id="openStoreButton">Download calsocial</button>
+        <button class="button" id="openAppButton">Open calsocial</button>
       </div>
     </div>
 
@@ -124,28 +120,79 @@ export default async (request: Request) => {
         document.getElementById("message").textContent = "Error";
       }
 
+      function showAppButtons() {
+        document.getElementById("message").textContent =
+          "To view this circle, please download or open the calsocial app:";
+        const appButtonsDiv = document.getElementById("appButtons");
+        appButtonsDiv.style.display = "block";
 
+        if (STATE.isInAppBrowser) {
+          document.getElementById("openAppButton").addEventListener("click", openAppInAppBrowser);
         } else {
+          document.getElementById("openAppButton").addEventListener("click", openAppNormal);
         }
         document.getElementById("openStoreButton").addEventListener("click", redirectToStore);
       }
 
+      function openAppNormal() {
+        window.location.href = STATE.urls.deepLink;
+        setTimeout(() => {
+          if (!document.hidden) {
+            showAppButtons();
+          }
+        }, 2000);
       }
 
+      function openAppInAppBrowser() {
+        if (STATE.platform === "ios") {
+          window.location.href = STATE.urls.universalLink;
+        } else {
+          window.location.href = STATE.urls.deepLink;
+        }
+        setTimeout(showAppButtons, 2500);
       }
 
+      function redirectToStore() {
+        if (STATE.platform === "ios") {
+          window.location.href = STATE.urls.appStoreURL;
+        } else if (STATE.platform === "android") {
+          window.location.href = STATE.urls.playStoreURL;
+        } else {
+          showError("Please open this link on an iOS or Android device to download the app.");
         }
       }
-      
+
+      // (Optional) JS title update for users after click; crawlers don't run JS
+      async function fetchAndApplyCircleTitle() {
         if (!STATE.uid) return;
         try {
+          const url = \`https://api.cal.social/circles/uid/\${encodeURIComponent(STATE.uid)}/name\`;
+          const res = await fetch(url, { headers: { Accept: "text/plain" } });
           if (!res.ok) return;
-              }
-            }
-            
-            } else {
-            }
+          const title = (await res.text()).trim();
+          if (title) {
+            document.title = title;
           }
+        } catch (e) {}
+      }
+
+      function handleIOS() {
+        if (STATE.isInAppBrowser) {
+          showAppButtons();
+          document.getElementById("message").textContent =
+            "To view this circle, please download or open the calsocial app:";
+        } else {
+          openAppNormal();
+        }
+      }
+
+      function handleAndroid() {
+        if (STATE.isInAppBrowser) {
+          showAppButtons();
+          document.getElementById("message").textContent =
+            "To view this circle, please download or open the calsocial app:";
+        } else {
+          openAppNormal();
         }
       }
 
@@ -157,12 +204,15 @@ export default async (request: Request) => {
           return;
         }
 
-        
+        fetchAndApplyCircleTitle();
+
         if (STATE.platform === "ios") {
           handleIOS();
         } else if (STATE.platform === "android") {
           handleAndroid();
         } else {
+          showError("Please open this link on a mobile device.");
+          document.getElementById("message").textContent = "Unsupported platform";
         }
       }
 
@@ -185,5 +235,3 @@ function escapeHtml(s: string) {
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
   }[c]!));
 }
-
-

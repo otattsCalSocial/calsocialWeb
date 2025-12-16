@@ -311,58 +311,13 @@ export default async (request: Request) => {
 
       let appInstalled = null; // null = unknown, true = installed, false = not installed
       let detectionTimeout = null;
-
-      function detectAppInstalled() {
-        if (appInstalled !== null) return; // Already detected
-        
-        const button = document.getElementById("openAppButton");
-        const buttonText = document.getElementById("buttonText");
-        
-        // Try to open the app
-        const startTime = Date.now();
-        const hidden = document.hidden;
-        
-        // Attempt to open deep link
-        window.location.href = STATE.urls.deepLink;
-        
-        // Set a timeout to detect if app opened
-        detectionTimeout = setTimeout(() => {
-          const elapsed = Date.now() - startTime;
-          // If page is still visible after 2 seconds, app likely didn't open
-          if (!document.hidden && elapsed > 2000) {
-            appInstalled = false;
-            updateButtonForAppStore();
-          }
-        }, 2000);
-        
-        // Listen for page visibility changes (app opened)
-        const visibilityHandler = () => {
-          if (document.hidden) {
-            appInstalled = true;
-            if (detectionTimeout) {
-              clearTimeout(detectionTimeout);
-            }
-            document.removeEventListener("visibilitychange", visibilityHandler);
-            document.removeEventListener("blur", visibilityHandler);
-          }
-        };
-        
-        document.addEventListener("visibilitychange", visibilityHandler);
-        document.addEventListener("blur", visibilityHandler);
-        
-        // Fallback: if still visible after 2.5 seconds, show app store
-        setTimeout(() => {
-          if (appInstalled === null) {
-            appInstalled = false;
-            updateButtonForAppStore();
-          }
-        }, 2500);
-      }
+      let hasAttemptedOpen = false;
 
       function updateButtonForAppStore() {
         const button = document.getElementById("openAppButton");
         const buttonText = document.getElementById("buttonText");
         
+        button.classList.remove("loading");
         button.classList.add("secondary");
         buttonText.textContent = STATE.platform === "ios" 
           ? "Download on App Store" 
@@ -380,13 +335,67 @@ export default async (request: Request) => {
           return;
         }
         
-        if (appInstalled === null) {
-          // First attempt, try to detect
+        if (!hasAttemptedOpen) {
+          // First click - try to open the app immediately
+          hasAttemptedOpen = true;
           button.classList.add("loading");
-          detectAppInstalled();
-        } else {
-          // App is installed, open it
+          
+          // Try to open deep link immediately
+          const startTime = Date.now();
+          
+          // Use a hidden iframe trick for better compatibility
+          const iframe = document.createElement("iframe");
+          iframe.style.display = "none";
+          iframe.src = STATE.urls.deepLink;
+          document.body.appendChild(iframe);
+          
+          // Also try direct navigation as fallback
+          setTimeout(() => {
+            window.location.href = STATE.urls.deepLink;
+          }, 100);
+          
+          // Set up detection
+          const visibilityHandler = () => {
+            if (document.hidden) {
+              // App opened successfully
+              appInstalled = true;
+              if (detectionTimeout) {
+                clearTimeout(detectionTimeout);
+              }
+              document.removeEventListener("visibilitychange", visibilityHandler);
+              document.removeEventListener("blur", visibilityHandler);
+              document.removeEventListener("pagehide", visibilityHandler);
+            }
+          };
+          
+          document.addEventListener("visibilitychange", visibilityHandler);
+          document.addEventListener("blur", visibilityHandler);
+          document.addEventListener("pagehide", visibilityHandler);
+          
+          // If page is still visible after 2 seconds, app likely didn't open
+          detectionTimeout = setTimeout(() => {
+            if (appInstalled === null && !document.hidden) {
+              appInstalled = false;
+              updateButtonForAppStore();
+              document.removeEventListener("visibilitychange", visibilityHandler);
+              document.removeEventListener("blur", visibilityHandler);
+              document.removeEventListener("pagehide", visibilityHandler);
+            }
+          }, 2000);
+          
+          // Clean up iframe after a delay
+          setTimeout(() => {
+            if (iframe.parentNode) {
+              iframe.parentNode.removeChild(iframe);
+            }
+          }, 3000);
+          
+        } else if (appInstalled === true) {
+          // App is confirmed installed, open it
           window.location.href = STATE.urls.deepLink;
+        } else {
+          // Already attempted, app not installed
+          redirectToStore();
         }
       }
 
@@ -422,6 +431,8 @@ export default async (request: Request) => {
         showEventPreview();
         // In-app browsers should show download button immediately
         if (STATE.isInAppBrowser) {
+          appInstalled = false;
+          hasAttemptedOpen = true;
           updateButtonForAppStore();
         }
       }
@@ -430,6 +441,8 @@ export default async (request: Request) => {
         showEventPreview();
         // In-app browsers should show download button immediately
         if (STATE.isInAppBrowser) {
+          appInstalled = false;
+          hasAttemptedOpen = true;
           updateButtonForAppStore();
         }
       }

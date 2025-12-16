@@ -7,7 +7,7 @@
       property="og:image"
       content="https://cal.social/assets/smallLogo.png"
     />
-    <title>calsocial event</title>
+    <title>calsocial circle</title>
     <style>
       /* Base styles and fonts */
       body {
@@ -129,8 +129,8 @@
 
         // Set up URLs
         STATE.urls = {
-          deepLink: `calsocial://event/${STATE.uid}`,
-          universalLink: `https://cal.social/event/${STATE.uid}`,
+          deepLink: `calsocial://circle/${STATE.uid}`,
+          universalLink: `https://cal.social/circle/${STATE.uid}`,
           appStoreURL: "https://apps.apple.com/app/calsocial/id6738835548",
           playStoreURL:
             "https://play.google.com/store/apps/details?id=social.cal.calsocial",
@@ -146,7 +146,7 @@
 
       function showAppButtons() {
         document.getElementById("message").textContent =
-          "To view this event, please download or open the calsocial app:";
+          "To view this circle, please download or open the calsocial app:";
         const appButtonsDiv = document.getElementById("appButtons");
         appButtonsDiv.style.display = "block";
 
@@ -194,18 +194,20 @@
         }
       }
 
-      // NEW: fetch the event title from your API
-      async function fetchAndApplyEventTitle() {
+      // Fetch the circle name from your API
+      async function fetchAndApplyCircleName() {
         if (!STATE.uid) return;
         try {
-          const url = `https://api.cal.social/events/${encodeURIComponent(
+          const url = `https://api.cal.social/circles/uid/${encodeURIComponent(
             STATE.uid
-          )}/title`;
+          )}/name`;
           const res = await fetch(url, { headers: { Accept: "text/plain" } });
           if (!res.ok) return;
-          const title = (await res.text()).trim();
-          if (title) {
-            document.title = title;
+          const name = (await res.text()).trim();
+          if (name) {
+            document.title = name;
+            // TODO: Display circle info here when ready
+            // document.getElementById("circleName").textContent = name;
           }
         } catch (e) {
           // fallback silently
@@ -216,7 +218,7 @@
         if (STATE.isInAppBrowser) {
           showAppButtons();
           document.getElementById("message").textContent =
-            "To view this event, please download or open the calsocial app:";
+            "To view this circle, please download or open the calsocial app:";
         } else {
           openAppNormal();
         }
@@ -226,7 +228,7 @@
         if (STATE.isInAppBrowser) {
           showAppButtons();
           document.getElementById("message").textContent =
-            "To view this event, please download or open the calsocial app:";
+            "To view this circle, please download or open the calsocial app:";
         } else {
           openAppNormal();
         }
@@ -236,12 +238,12 @@
         detectEnvironment();
 
         if (!STATE.uid) {
-          showError("Error: Event ID is missing");
+          showError("Error: Circle ID is missing");
           return;
         }
 
-        // Fetch and apply title here
-        fetchAndApplyEventTitle();
+        // Fetch and apply circle name here
+        fetchAndApplyCircleName();
 
         if (STATE.platform === "ios") {
           handleIOS();
@@ -258,3 +260,4 @@
     </script>
   </body>
 </html>
+

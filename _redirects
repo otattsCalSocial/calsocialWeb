@@ -1,1 +1,2 @@
-/event/*  /app-redirect/index.html  200
+/event/*  /app-redirect/event.html  200
+/circle/*  /app-redirect/circle.html  200

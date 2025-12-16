@@ -5,3 +5,7 @@
 [[edge_functions]]
   path = "/event/*"
   function = "share-event"   # maps to /netlify/edge-functions/share-event.{ts,js}
+
+[[edge_functions]]
+  path = "/circle/*"
+  function = "share-circle"   # maps to /netlify/edge-functions/share-circle.{ts,js}

@@ -74,50 +74,153 @@ export default async (request: Request) => {
     <meta name="twitter:image" content="${imageUrl}" />
 
     <style>
-      /* --- your existing CSS unchanged --- */
+      * { box-sizing: border-box; }
       body {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-        margin: 0; padding: 0; display: flex; align-items: center; justify-content: center;
-        min-height: 100vh; background-color: #9b111e; color: #333;
+        margin: 0; padding: 0; padding-bottom: 80px; background-color: #f5f5f5; color: #333;
+        min-height: 100vh;
       }
-      .app-icon { width: 64px; height: 64px; position: absolute; top: 20px; left: 50%; transform: translateX(-50%); }
-      .container { background: #fff; border-radius: 16px; padding: 30px 25px; max-width: 600px; width: 90%;
-        box-shadow: 0 4px 20px rgba(0,0,0,.1); text-align: center; position: relative; }
-      .message { font-size: 1.2em; margin-bottom: 20px; }
-      .error-message { background-color: #fdecea; color: #e74c3c; border-radius: 8px; padding: 10px; margin: 15px 0; display: none; }
-      .button { display: inline-block; padding: 12px 24px; background-color: #9b111e; color: #fff; text-decoration: none;
-        border-radius: 8px; margin: 10px; font-weight: 600; border: none; cursor: pointer; transition: background-color .3s, transform .2s; }
-      .button:hover { background-color: #7d0e18; transform: translateY(-2px); }
-      .app-buttons { margin: 20px 0; }
-      .app-buttons .button { width: 100%; max-width: 200px; }
-      /* Circle preview styles */
-      .circle-preview { display: none; text-align: center; margin-bottom: 20px; }
-      .circle-picture { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin: 0 auto 16px; border: 1px solid #e0e0e0; }
-      .circle-picture-placeholder { width: 100px; height: 100px; border-radius: 50%; background-color: #fff; border: 1px solid #e0e0e0; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 48px; color: #9B111E; }
-      .circle-name { font-size: 24px; font-weight: bold; color: #333; margin-bottom: 4px; }
-      .circle-member-count { font-size: 14px; color: #9B111E; font-weight: 500; margin-bottom: 12px; }
-      .circle-description { font-size: 15px; color: #666; line-height: 1.5; text-align: center; margin-bottom: 16px; }
+      .container { 
+        background: #fff; 
+        max-width: 600px; 
+        width: 100%; 
+        margin: 0 auto;
+        min-height: calc(100vh - 80px);
+      }
+      /* Circle preview styles - matching app design */
+      .circle-preview { 
+        display: none; 
+        padding: 20px; 
+        text-align: center;
+        background: #fff;
+      }
+      .circle-picture { 
+        width: 100px; 
+        height: 100px; 
+        border-radius: 50%; 
+        object-fit: cover; 
+        margin: 0 auto 16px; 
+        border: 1px solid #e0e0e0; 
+        display: block;
+      }
+      .circle-picture-placeholder { 
+        width: 100px; 
+        height: 100px; 
+        border-radius: 50%; 
+        background-color: #fff; 
+        border: 1px solid #e0e0e0; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        margin: 0 auto 16px; 
+        font-size: 48px; 
+        color: #9B111E; 
+      }
+      .circle-name { 
+        font-size: 24px; 
+        font-weight: bold; 
+        color: #222; 
+        margin-bottom: 8px; 
+      }
+      .circle-member-count { 
+        font-size: 16px; 
+        color: #9B111E; 
+        font-weight: 500; 
+        margin-bottom: 16px; 
+      }
+      .circle-description { 
+        font-size: 15px; 
+        color: #555; 
+        line-height: 23px; 
+        text-align: center; 
+        margin-bottom: 16px; 
+      }
+      .circle-description.has-content {
+        padding: 12px;
+        background-color: #f7f7f7;
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+      }
+      .error-message { 
+        background-color: #fdecea; 
+        color: #e74c3c; 
+        border-radius: 8px; 
+        padding: 10px; 
+        margin: 15px 20px; 
+        display: none; 
+      }
+      /* Sticky footer button */
+      .sticky-footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: #fff;
+        border-top: 1px solid #e0e0e0;
+        padding: 12px 20px;
+        padding-bottom: calc(12px + env(safe-area-inset-bottom));
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        z-index: 1000;
+      }
+      .footer-button {
+        width: 100%;
+        padding: 16px;
+        background-color: #9B111E;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 17px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+      .footer-button:hover {
+        background-color: #7d0e18;
+      }
+      .footer-button:active {
+        background-color: #6a0d15;
+      }
+      .footer-button.secondary {
+        background-color: #f5f5f5;
+        color: #333;
+        border: 1px solid #e0e0e0;
+      }
+      .footer-button.secondary:hover {
+        background-color: #e8e8e8;
+      }
+      .footer-button.loading {
+        opacity: 0.7;
+        cursor: not-allowed;
+      }
+      @media (max-width: 600px) {
+        .container {
+          width: 100%;
+        }
+      }
     </style>
   </head>
   <body>
-    <img src="../assets/icon.png" alt="Calsocial Icon" class="app-icon" />
     <div class="container">
       <!-- Circle Preview Section -->
       <div id="circlePreview" class="circle-preview" style="${title && title !== 'calsocial circle' ? 'display: block;' : 'display: none;'}">
         ${showPicture ? `<img id="circlePicture" class="circle-picture" src="${safePictureUrl}" />` : '<div id="circlePicturePlaceholder" class="circle-picture-placeholder">👥</div>'}
         <h1 id="circleName" class="circle-name">${safeTitle}</h1>
         <div id="circleMemberCount" class="circle-member-count">${memberCount} ${memberCount === 1 ? 'member' : 'members'}</div>
-        ${description ? `<p id="circleDescription" class="circle-description">${safeDescription}</p>` : '<p id="circleDescription" class="circle-description" style="display: none;"></p>'}
+        ${description ? `<p id="circleDescription" class="circle-description has-content">${safeDescription}</p>` : '<p id="circleDescription" class="circle-description" style="display: none;"></p>'}
       </div>
 
-      <div class="message" id="message">Opening calsocial...</div>
       <div class="error-message" id="errorMessage"></div>
-
-      <!-- App Buttons Section -->
-      <div id="appButtons" style="display: none" class="app-buttons">
-        <button class="button" id="openStoreButton">Download calsocial</button>
-        <button class="button" id="openAppButton">Open calsocial</button>
-      </div>
+    </div>
+    
+    <!-- Sticky Footer Button -->
+    <div class="sticky-footer">
+      <button class="footer-button" id="openAppButton">
+        <span id="buttonText">Open in calsocial</span>
+      </button>
     </div>
 
     <script>
@@ -157,39 +260,87 @@ export default async (request: Request) => {
         const errorElement = document.getElementById("errorMessage");
         errorElement.textContent = message;
         errorElement.style.display = "block";
-        document.getElementById("message").textContent = "Error";
       }
 
-      function showAppButtons() {
-        document.getElementById("message").textContent =
-          "To view this circle, please download or open the calsocial app:";
-        const appButtonsDiv = document.getElementById("appButtons");
-        appButtonsDiv.style.display = "block";
+      let appInstalled = null; // null = unknown, true = installed, false = not installed
+      let detectionTimeout = null;
 
-        if (STATE.isInAppBrowser) {
-          document.getElementById("openAppButton").addEventListener("click", openAppInAppBrowser);
-        } else {
-          document.getElementById("openAppButton").addEventListener("click", openAppNormal);
-        }
-        document.getElementById("openStoreButton").addEventListener("click", redirectToStore);
-      }
-
-      function openAppNormal() {
+      function detectAppInstalled() {
+        if (appInstalled !== null) return; // Already detected
+        
+        const button = document.getElementById("openAppButton");
+        const buttonText = document.getElementById("buttonText");
+        
+        // Try to open the app
+        const startTime = Date.now();
+        const hidden = document.hidden;
+        
+        // Attempt to open deep link
         window.location.href = STATE.urls.deepLink;
-        setTimeout(() => {
-          if (!document.hidden) {
-            showAppButtons();
+        
+        // Set a timeout to detect if app opened
+        detectionTimeout = setTimeout(() => {
+          const elapsed = Date.now() - startTime;
+          // If page is still visible after 2 seconds, app likely didn't open
+          if (!document.hidden && elapsed > 2000) {
+            appInstalled = false;
+            updateButtonForAppStore();
           }
         }, 2000);
+        
+        // Listen for page visibility changes (app opened)
+        const visibilityHandler = () => {
+          if (document.hidden) {
+            appInstalled = true;
+            if (detectionTimeout) {
+              clearTimeout(detectionTimeout);
+            }
+            document.removeEventListener("visibilitychange", visibilityHandler);
+            document.removeEventListener("blur", visibilityHandler);
+          }
+        };
+        
+        document.addEventListener("visibilitychange", visibilityHandler);
+        document.addEventListener("blur", visibilityHandler);
+        
+        // Fallback: if still visible after 2.5 seconds, show app store
+        setTimeout(() => {
+          if (appInstalled === null) {
+            appInstalled = false;
+            updateButtonForAppStore();
+          }
+        }, 2500);
       }
 
-      function openAppInAppBrowser() {
-        if (STATE.platform === "ios") {
-          window.location.href = STATE.urls.universalLink;
+      function updateButtonForAppStore() {
+        const button = document.getElementById("openAppButton");
+        const buttonText = document.getElementById("buttonText");
+        
+        button.classList.add("secondary");
+        buttonText.textContent = STATE.platform === "ios" 
+          ? "Download on App Store" 
+          : STATE.platform === "android"
+          ? "Download on Google Play"
+          : "Download calsocial";
+      }
+
+      function openApp() {
+        const button = document.getElementById("openAppButton");
+        
+        if (appInstalled === false) {
+          // App not installed, go to store
+          redirectToStore();
+          return;
+        }
+        
+        if (appInstalled === null) {
+          // First attempt, try to detect
+          button.classList.add("loading");
+          detectAppInstalled();
         } else {
+          // App is installed, open it
           window.location.href = STATE.urls.deepLink;
         }
-        setTimeout(showAppButtons, 2500);
       }
 
       function redirectToStore() {
@@ -198,38 +349,28 @@ export default async (request: Request) => {
         } else if (STATE.platform === "android") {
           window.location.href = STATE.urls.playStoreURL;
         } else {
-          showError("Please open this link on an iOS or Android device to download the app.");
+          // Desktop - show both options
+          const choice = confirm("Please open this link on a mobile device.\n\nWould you like to view the App Store page?");
+          if (choice) {
+            window.open(STATE.urls.appStoreURL, "_blank");
+          }
         }
       }
 
 
       function handleIOS() {
-        // Show preview first, then handle redirect
         showCirclePreview();
+        // In-app browsers should show download button immediately
         if (STATE.isInAppBrowser) {
-          showAppButtons();
-          document.getElementById("message").textContent =
-            "To view this circle, please download or open the calsocial app:";
-        } else {
-          // Delay redirect to show preview
-          setTimeout(() => {
-            openAppNormal();
-          }, 1500);
+          updateButtonForAppStore();
         }
       }
 
       function handleAndroid() {
-        // Show preview first, then handle redirect
         showCirclePreview();
+        // In-app browsers should show download button immediately
         if (STATE.isInAppBrowser) {
-          showAppButtons();
-          document.getElementById("message").textContent =
-            "To view this circle, please download or open the calsocial app:";
-        } else {
-          // Delay redirect to show preview
-          setTimeout(() => {
-            openAppNormal();
-          }, 1500);
+          updateButtonForAppStore();
         }
       }
 
@@ -279,8 +420,10 @@ export default async (request: Request) => {
             if (circle.description) {
               circleDescription.textContent = circle.description;
               circleDescription.style.display = "block";
+              circleDescription.classList.add("has-content");
             } else {
               circleDescription.style.display = "none";
+              circleDescription.classList.remove("has-content");
             }
           }
         } catch (e) {
@@ -305,16 +448,17 @@ export default async (request: Request) => {
           showCirclePreview();
         });
 
+        // Set up button click handler
+        document.getElementById("openAppButton").addEventListener("click", openApp);
+        
         if (STATE.platform === "ios") {
           handleIOS();
         } else if (STATE.platform === "android") {
           handleAndroid();
         } else {
-          // Desktop - show preview and buttons
+          // Desktop - show preview and app store button
           showCirclePreview();
-          showAppButtons();
-          document.getElementById("message").textContent =
-            "To view this circle, please download or open the calsocial app:";
+          updateButtonForAppStore();
         }
       }
 

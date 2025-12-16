@@ -7,7 +7,7 @@
       property="og:image"
       content="https://cal.social/assets/smallLogo.png"
     />
-    <title>calsocial event</title>
+    <title>calsocial circle</title>
     <style>
       /* Base styles and fonts */
       body {
@@ -82,6 +82,22 @@
         width: 100%;
         max-width: 200px;
       }
+      /* Dynamic content styling */
+      .dynamic-content {
+        margin: 15px 0;
+        padding: 15px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+      }
+      .dynamic-content h2 {
+        margin: 0 0 10px 0;
+        font-size: 1.3em;
+        color: #333;
+      }
+      .dynamic-content p {
+        margin: 5px 0;
+        color: #666;
+      }
     </style>
   </head>
   <body>
@@ -90,7 +106,8 @@
       <div class="message" id="message">Opening calsocial...</div>
       <div class="error-message" id="errorMessage"></div>
 
-      <!-- Browser Instructions Section Removed -->
+      <!-- Dynamic Content Section -->
+      <div id="dynamicContent" class="dynamic-content" style="display: none;"></div>
 
       <!-- App Buttons Section -->
       <div id="appButtons" style="display: none" class="app-buttons">
@@ -105,7 +122,7 @@
         platform: null,
         isInAppBrowser: false,
         urls: {},
-        // Removed browserInstructions property
+        buttonsInitialized: false,
       };
 
       function detectEnvironment() {
@@ -133,8 +150,8 @@
 
         // Set up URLs
         STATE.urls = {
-          deepLink: `calsocial://event/${STATE.uid}`,
-          universalLink: `https://cal.social/event/${STATE.uid}`, // Keep universal link for potential future use or direct opening attempts
+          deepLink: `calsocial://circle/${STATE.uid}`,
+          universalLink: `https://cal.social/circle/${STATE.uid}`, // Keep universal link for potential future use or direct opening attempts
           appStoreURL: "https://apps.apple.com/app/calsocial/id6738835548",
           playStoreURL:
             "https://play.google.com/store/apps/details?id=social.cal.calsocial",
@@ -153,25 +170,26 @@
 
       function showAppButtons() {
         document.getElementById("message").textContent =
-          "To view this event, please download or open the calsocial app:";
+          "To view this circle, please download or open the calsocial app:";
         const appButtonsDiv = document.getElementById("appButtons");
         appButtonsDiv.style.display = "block";
 
-        // Bind button click events based on environment:
-        if (STATE.isInAppBrowser) {
-          // For in-app browsers, attempting to open via deep link might be more direct
-          // if universal links don't work well within them. Let's keep trying deep link first.
+        // Only attach event listeners once to prevent duplicates
+        if (!STATE.buttonsInitialized) {
+          if (STATE.isInAppBrowser) {
+            document
+              .getElementById("openAppButton")
+              .addEventListener("click", openAppInAppBrowser);
+          } else {
+            document
+              .getElementById("openAppButton")
+              .addEventListener("click", openAppNormal);
+          }
           document
-            .getElementById("openAppButton")
-            .addEventListener("click", openAppInAppBrowser);
-        } else {
-          document
-            .getElementById("openAppButton")
-            .addEventListener("click", openAppNormal);
+            .getElementById("openStoreButton")
+            .addEventListener("click", redirectToStore);
+          STATE.buttonsInitialized = true;
         }
-        document
-          .getElementById("openStoreButton")
-          .addEventListener("click", redirectToStore);
       }
 
       // Removed copyToClipboard function
@@ -197,7 +215,11 @@
         }
         
         // Wait to see if app opens
-        setTimeout(handleAppOpenFallback, 2500);
+        setTimeout(() => {
+          if (!document.hidden) {
+            showAppButtons();
+          }
+        }, 2500);
       }
 
       function redirectToStore() {
@@ -214,12 +236,57 @@
         }
       }
 
+      // Fetch and display dynamic circle data (non-blocking, won't interfere with buttons)
+      async function fetchAndDisplayCircleData() {
+        if (!STATE.uid) return;
+        
+        const dynamicContentDiv = document.getElementById("dynamicContent");
+        if (!dynamicContentDiv) return;
+
+        try {
+          // Fetch circle name
+          const nameUrl = `https://api.cal.social/circles/uid/${encodeURIComponent(STATE.uid)}/name`;
+          const nameRes = await fetch(nameUrl, { headers: { Accept: "text/plain" } });
+          
+          if (nameRes.ok) {
+            const name = (await nameRes.text()).trim();
+            if (name) {
+              document.title = name;
+              
+              // Display the circle name in the dynamic content area
+              const div = document.createElement("div");
+              div.textContent = name;
+              dynamicContentDiv.innerHTML = `<h2>${div.innerHTML}</h2>`;
+              dynamicContentDiv.style.display = "block";
+            }
+          }
+
+          // You can add more API calls here to fetch additional data
+          // For example: description, member count, etc.
+          // Example:
+          // const descUrl = `https://api.cal.social/circles/uid/${encodeURIComponent(STATE.uid)}/description`;
+          // const descRes = await fetch(descUrl, { headers: { Accept: "text/plain" } });
+          // if (descRes.ok) {
+          //   const description = (await descRes.text()).trim();
+          //   if (description) {
+          //     const descDiv = document.createElement("div");
+          //     descDiv.textContent = description;
+          //     dynamicContentDiv.innerHTML += `<p>${descDiv.innerHTML}</p>`;
+          //   }
+          // }
+
+        } catch (e) {
+          // Silently fail - don't break the page if API calls fail
+          console.error("Failed to fetch circle data:", e);
+        }
+      }
+
       function handleIOS() {
         if (STATE.isInAppBrowser) {
           // In-app browser detected, don't try auto-opening, just show options.
           showAppButtons();
           document.getElementById("message").textContent = // Custom message for in-app browser
-            "To view this event, please download or open the calsocial app:";
+            "To view this circle, please download or open the calsocial app:";
         } else {
           // Try opening directly via deep link first for normal browsers
           openAppNormal();
@@ -232,7 +299,7 @@
           // In-app browser detected, don't try auto-opening, just show options.
           showAppButtons();
           document.getElementById("message").textContent = // Custom message for in-app browser
-            "To view this event, please download or open the calsocial app:";
+            "To view this circle, please download or open the calsocial app:";
         } else {
           // Try opening directly via deep link first for normal browsers
           openAppNormal();
@@ -244,9 +311,12 @@
         detectEnvironment();
 
         if (!STATE.uid) {
-          showError("Error: Event ID is missing");
+          showError("Error: Circle ID is missing");
           return;
         }
+
+        // Fetch and display dynamic data (non-blocking, won't break buttons)
+        fetchAndDisplayCircleData();
 
         if (STATE.platform === "ios") {
           handleIOS();

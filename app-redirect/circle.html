@@ -82,11 +82,66 @@
         width: 100%;
         max-width: 200px;
       }
+      /* Circle preview styles */
+      .circle-preview {
+        display: none;
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      .circle-picture {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin: 0 auto 16px;
+        border: 1px solid #e0e0e0;
+      }
+      .circle-picture-placeholder {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background-color: #fff;
+        border: 1px solid #e0e0e0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+        font-size: 48px;
+        color: #9B111E;
+      }
+      .circle-name {
+        font-size: 24px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 4px;
+      }
+      .circle-member-count {
+        font-size: 14px;
+        color: #9B111E;
+        font-weight: 500;
+        margin-bottom: 12px;
+      }
+      .circle-description {
+        font-size: 15px;
+        color: #666;
+        line-height: 1.5;
+        text-align: center;
+        margin-bottom: 16px;
+      }
     </style>
   </head>
   <body>
     <img src="../assets/icon.png" alt="Calsocial Icon" class="app-icon" />
     <div class="container">
+      <!-- Circle Preview Section -->
+      <div id="circlePreview" class="circle-preview">
+        <img id="circlePicture" class="circle-picture" style="display: none;" />
+        <div id="circlePicturePlaceholder" class="circle-picture-placeholder" style="display: none;">👥</div>
+        <h1 id="circleName" class="circle-name"></h1>
+        <div id="circleMemberCount" class="circle-member-count"></div>
+        <p id="circleDescription" class="circle-description"></p>
+      </div>
+
       <div class="message" id="message">Opening calsocial...</div>
       <div class="error-message" id="errorMessage"></div>
 

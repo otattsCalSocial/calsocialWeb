@@ -1,2 +1,3 @@
-/event/*  /app-redirect/event.html  200
-/circle/*  /app-redirect/circle.html  200
+# Redirects disabled - using edge functions instead (see netlify.toml)
+# /event/*  /app-redirect/event.html  200
+# /circle/*  /app-redirect/circle.html  200

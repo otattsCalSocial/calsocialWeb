@@ -270,18 +270,18 @@
         if (!dynamicContentDiv) return;
 
         try {
-          // Fetch event title
-          const titleUrl = `https://api.cal.social/events/${encodeURIComponent(STATE.uid)}/title`;
-          const titleRes = await fetch(titleUrl, { headers: { Accept: "text/plain" } });
+          // Fetch event details
+          const eventUrl = `https://api.cal.social/events/byuid/${encodeURIComponent(STATE.uid)}`;
+          const eventRes = await fetch(eventUrl, { headers: { Accept: "application/json" } });
           
-          if (titleRes.ok) {
-            const title = (await titleRes.text()).trim();
-            if (title) {
-              document.title = title;
+          if (eventRes.ok) {
+            const eventData = await eventRes.json();
+            if (eventData?.title) {
+              document.title = eventData.title;
               
               // Display the event title in the dynamic content area
               const div = document.createElement("div");
-              div.textContent = title;
+              div.textContent = eventData.title;
               dynamicContentDiv.innerHTML = `<h2>${div.innerHTML}</h2>`;
               dynamicContentDiv.style.display = "block";
             }

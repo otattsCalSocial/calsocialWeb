@@ -9,17 +9,17 @@ export default async (request: Request) => {
 
   const uid = match[1];
 
-  // Fetch title from your public API (AllowAnonymous endpoint)
+  // Fetch event details from your public API (AllowAnonymous endpoint)
   let title = "calsocial event";
 
 
   try {
-    const r = await fetch(`https://api.cal.social/events/${encodeURIComponent(uid)}/title`, {
-      headers: { Accept: "text/plain" }
+    const r = await fetch(`https://api.cal.social/events/byuid/${encodeURIComponent(uid)}`, {
+      headers: { Accept: "application/json" }
     });
     if (r.ok) {
-      const t = (await r.text()).trim();
-      if (t) title = t;
+      const eventData = await r.json();
+      if (eventData?.title) title = eventData.title;
 
 
     }
@@ -182,12 +182,12 @@ export default async (request: Request) => {
       async function fetchAndApplyEventTitle() {
         if (!STATE.uid) return;
         try {
-          const url = \`https://api.cal.social/events/\${encodeURIComponent(STATE.uid)}/title\`;
-          const res = await fetch(url, { headers: { Accept: "text/plain" } });
+          const url = \`https://api.cal.social/events/byuid/\${encodeURIComponent(STATE.uid)}\`;
+          const res = await fetch(url, { headers: { Accept: "application/json" } });
           if (!res.ok) return;
-          const title = (await res.text()).trim();
-          if (title) {
-            document.title = title;
+          const eventData = await res.json();
+          if (eventData?.title) {
+            document.title = eventData.title;
           }
         } catch (e) {}
       }

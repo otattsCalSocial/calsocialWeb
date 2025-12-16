@@ -82,11 +82,83 @@
         width: 100%;
         max-width: 200px;
       }
+      /* Event preview styles */
+      .event-preview {
+        display: none;
+        text-align: left;
+        margin-bottom: 20px;
+      }
+      .event-header-image {
+        width: 100%;
+        max-height: 300px;
+        object-fit: cover;
+        border-radius: 12px;
+        margin-bottom: 16px;
+      }
+      .event-emoji {
+        font-size: 48px;
+        margin-bottom: 12px;
+      }
+      .event-title {
+        font-size: 28px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 8px;
+        line-height: 1.2;
+      }
+      .event-description {
+        font-size: 16px;
+        color: #666;
+        line-height: 1.5;
+        margin-bottom: 16px;
+      }
+      .event-details {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+      .event-detail-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 15px;
+        color: #555;
+      }
+      .event-detail-item .icon {
+        width: 20px;
+        text-align: center;
+      }
+      .attendee-count {
+        font-size: 16px;
+        color: #9B111E;
+        font-weight: 500;
+        margin-top: 8px;
+      }
     </style>
   </head>
   <body>
     <img src="../assets/icon.png" alt="Calsocial Icon" class="app-icon" />
     <div class="container">
+      <!-- Event Preview Section -->
+      <div id="eventPreview" class="event-preview">
+        <img id="eventImage" class="event-header-image" style="display: none;" />
+        <div id="eventEmoji" class="event-emoji"></div>
+        <h1 id="eventTitle" class="event-title"></h1>
+        <p id="eventDescription" class="event-description"></p>
+        <div class="event-details">
+          <div class="event-detail-item">
+            <span class="icon">📅</span>
+            <span id="eventDate"></span>
+          </div>
+          <div class="event-detail-item" id="eventLocationContainer" style="display: none;">
+            <span class="icon">📍</span>
+            <span id="eventLocation"></span>
+          </div>
+        </div>
+        <div id="attendeeCount" class="attendee-count"></div>
+      </div>
+
       <div class="message" id="message">Opening calsocial...</div>
       <div class="error-message" id="errorMessage"></div>
 
@@ -194,23 +266,107 @@
         }
       }
 
-      // Fetch the event title from your API
-      async function fetchAndApplyEventTitle() {
+      // Fetch and display event preview
+      async function fetchAndDisplayEventPreview() {
         if (!STATE.uid) return;
         try {
-          const url = `https://api.cal.social/events/${encodeURIComponent(
-            STATE.uid
-          )}/title`;
-          const res = await fetch(url, { headers: { Accept: "text/plain" } });
+          const url = `https://api.cal.social/events/${encodeURIComponent(STATE.uid)}/preview`;
+          const res = await fetch(url, { headers: { Accept: "application/json" } });
           if (!res.ok) return;
-          const title = (await res.text()).trim();
-          if (title) {
-            document.title = title;
-            // TODO: Display event info here when ready
-            // document.getElementById("eventTitle").textContent = title;
+          
+          const event = await res.json();
+          
+          // Update page title
+          if (event.title) {
+            document.title = event.title;
+          }
+          
+          // Display event preview
+          const previewDiv = document.getElementById("eventPreview");
+          if (previewDiv && event.title) {
+            previewDiv.style.display = "block";
+            
+            // Event image
+            const eventImage = document.getElementById("eventImage");
+            if (event.imageUrl) {
+              eventImage.src = event.imageUrl;
+              eventImage.style.display = "block";
+            }
+            
+            // Event emoji
+            const eventEmoji = document.getElementById("eventEmoji");
+            if (event.emoji) {
+              eventEmoji.textContent = event.emoji;
+            } else {
+              eventEmoji.style.display = "none";
+            }
+            
+            // Event title
+            document.getElementById("eventTitle").textContent = event.title;
+            
+            // Event description
+            const eventDescription = document.getElementById("eventDescription");
+            if (event.description) {
+              eventDescription.textContent = event.description;
+            } else {
+              eventDescription.style.display = "none";
+            }
+            
+            // Event date
+            const startDate = new Date(event.startDate);
+            const endDate = event.endDate ? new Date(event.endDate) : null;
+            const dateStr = formatEventDate(startDate, endDate);
+            document.getElementById("eventDate").textContent = dateStr;
+            
+            // Event location
+            const locationContainer = document.getElementById("eventLocationContainer");
+            const location = event.location || event.city;
+            if (location) {
+              document.getElementById("eventLocation").textContent = location;
+              locationContainer.style.display = "flex";
+            }
+            
+            // Attendee count
+            const attendeeCount = document.getElementById("attendeeCount");
+            const count = event.attendeeCount || 0;
+            if (count > 0) {
+              attendeeCount.textContent = `${count} ${count === 1 ? 'person' : 'people'} ${count === 1 ? 'is' : 'are'} ${event.openInvite ? 'going' : 'invited'}`;
+            } else {
+              attendeeCount.textContent = "Be the first to join!";
+            }
           }
         } catch (e) {
-          // fallback silently
+          console.error("Error fetching event preview:", e);
+        }
+      }
+      
+      function formatEventDate(startDate, endDate) {
+        const options = { 
+          weekday: 'long', 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit'
+        };
+        
+        if (endDate && endDate.getTime() !== startDate.getTime()) {
+          const startStr = startDate.toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            month: 'long', 
+            day: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit'
+          });
+          const endStr = endDate.toLocaleDateString('en-US', { 
+            month: 'long', 
+            day: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit'
+          });
+          return `${startStr} - ${endStr}`;
+        } else {
+          return startDate.toLocaleDateString('en-US', options);
         }
       }
 
@@ -242,8 +398,8 @@
           return;
         }
 
-        // Fetch and apply title here
-        fetchAndApplyEventTitle();
+        // Fetch and display event preview
+        fetchAndDisplayEventPreview();
 
         if (STATE.platform === "ios") {
           handleIOS();

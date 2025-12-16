@@ -9,21 +9,37 @@ export default async (request: Request) => {
 
   const uid = match[1];
 
-  // Fetch title from your public API (AllowAnonymous endpoint)
+  // Fetch event preview from your public API (AllowAnonymous endpoint)
   let title = "calsocial event";
+  let description = "Join this event on calsocial!";
+  let imageUrl = "https://cal.social/assets/smallLogo.png";
   try {
-    const r = await fetch(`https://api.cal.social/events/${encodeURIComponent(uid)}/title`, {
-      headers: { Accept: "text/plain" }
+    const r = await fetch(`https://api.cal.social/events/${encodeURIComponent(uid)}/preview`, {
+      headers: { Accept: "application/json" }
     });
     if (r.ok) {
-      const t = (await r.text()).trim();
-      if (t) title = t;
+      const event = await r.json();
+      if (event.title) title = event.title;
+      if (event.description) description = event.description;
+      if (event.imageUrl) imageUrl = event.imageUrl;
     }
   } catch {
-    // keep fallback
+    // Fallback to title endpoint
+    try {
+      const r = await fetch(`https://api.cal.social/events/${encodeURIComponent(uid)}/title`, {
+        headers: { Accept: "text/plain" }
+      });
+      if (r.ok) {
+        const t = (await r.text()).trim();
+        if (t) title = t;
+      }
+    } catch {
+      // keep fallback
+    }
   }
 
   const safeTitle = escapeHtml(title);
+  const safeDescription = escapeHtml(description);
   const safeUid = escapeHtml(uid);
 
   // Return your existing redirect page, but with server-rendered <title> + OG/Twitter tags.
@@ -37,16 +53,16 @@ export default async (request: Request) => {
 
     <!-- Open Graph for social previews -->
     <meta property="og:title" content="${safeTitle}" />
-    <meta property="og:description" content="Join this event on calsocial!" />
-    <meta property="og:image" content="https://cal.social/assets/smallLogo.png" />
+    <meta property="og:description" content="${safeDescription}" />
+    <meta property="og:image" content="${imageUrl}" />
     <meta property="og:url" content="https://cal.social/event/${safeUid}" />
     <meta property="og:type" content="website" />
 
     <!-- Optional: Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${safeTitle}" />
-    <meta name="twitter:description" content="Join this event on calsocial!" />
-    <meta name="twitter:image" content="https://cal.social/assets/smallLogo.png" />
+    <meta name="twitter:description" content="${safeDescription}" />
+    <meta name="twitter:image" content="${imageUrl}" />
 
     <style>
       /* --- your existing CSS unchanged --- */

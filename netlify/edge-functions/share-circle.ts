@@ -9,21 +9,37 @@ export default async (request: Request) => {
 
   const uid = match[1];
 
-  // Fetch title from your public API (AllowAnonymous endpoint)
+  // Fetch circle preview from your public API (AllowAnonymous endpoint)
   let title = "calsocial circle";
+  let description = "Join this circle on calsocial!";
+  let imageUrl = "https://cal.social/assets/smallLogo.png";
   try {
-    const r = await fetch(`https://api.cal.social/circles/uid/${encodeURIComponent(uid)}/name`, {
-      headers: { Accept: "text/plain" }
+    const r = await fetch(`https://api.cal.social/circles/uid/${encodeURIComponent(uid)}/preview`, {
+      headers: { Accept: "application/json" }
     });
     if (r.ok) {
-      const t = (await r.text()).trim();
-      if (t) title = t;
+      const circle = await r.json();
+      if (circle.name) title = circle.name;
+      if (circle.description) description = circle.description;
+      if (circle.pictureUrl) imageUrl = circle.pictureUrl;
     }
   } catch {
-    // keep fallback
+    // Fallback to name endpoint
+    try {
+      const r = await fetch(`https://api.cal.social/circles/uid/${encodeURIComponent(uid)}/name`, {
+        headers: { Accept: "text/plain" }
+      });
+      if (r.ok) {
+        const t = (await r.text()).trim();
+        if (t) title = t;
+      }
+    } catch {
+      // keep fallback
+    }
   }
 
   const safeTitle = escapeHtml(title);
+  const safeDescription = escapeHtml(description);
   const safeUid = escapeHtml(uid);
 
   // Return your existing redirect page, but with server-rendered <title> + OG/Twitter tags.
@@ -37,16 +53,16 @@ export default async (request: Request) => {
 
     <!-- Open Graph for social previews -->
     <meta property="og:title" content="${safeTitle}" />
-    <meta property="og:description" content="Join this circle on calsocial!" />
-    <meta property="og:image" content="https://cal.social/assets/smallLogo.png" />
+    <meta property="og:description" content="${safeDescription}" />
+    <meta property="og:image" content="${imageUrl}" />
     <meta property="og:url" content="https://cal.social/circle/${safeUid}" />
     <meta property="og:type" content="website" />
 
     <!-- Optional: Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${safeTitle}" />
-    <meta name="twitter:description" content="Join this circle on calsocial!" />
-    <meta name="twitter:image" content="https://cal.social/assets/smallLogo.png" />
+    <meta name="twitter:description" content="${safeDescription}" />
+    <meta name="twitter:image" content="${imageUrl}" />
 
     <style>
       /* --- your existing CSS unchanged --- */

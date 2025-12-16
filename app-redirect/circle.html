@@ -82,11 +82,66 @@
         width: 100%;
         max-width: 200px;
       }
+      /* Circle preview styles */
+      .circle-preview {
+        display: none;
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      .circle-picture {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin: 0 auto 16px;
+        border: 1px solid #e0e0e0;
+      }
+      .circle-picture-placeholder {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background-color: #fff;
+        border: 1px solid #e0e0e0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+        font-size: 48px;
+        color: #9B111E;
+      }
+      .circle-name {
+        font-size: 24px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 4px;
+      }
+      .circle-member-count {
+        font-size: 14px;
+        color: #9B111E;
+        font-weight: 500;
+        margin-bottom: 12px;
+      }
+      .circle-description {
+        font-size: 15px;
+        color: #666;
+        line-height: 1.5;
+        text-align: center;
+        margin-bottom: 16px;
+      }
     </style>
   </head>
   <body>
     <img src="../assets/icon.png" alt="Calsocial Icon" class="app-icon" />
     <div class="container">
+      <!-- Circle Preview Section -->
+      <div id="circlePreview" class="circle-preview">
+        <img id="circlePicture" class="circle-picture" style="display: none;" />
+        <div id="circlePicturePlaceholder" class="circle-picture-placeholder" style="display: none;">👥</div>
+        <h1 id="circleName" class="circle-name"></h1>
+        <div id="circleMemberCount" class="circle-member-count"></div>
+        <p id="circleDescription" class="circle-description"></p>
+      </div>
+
       <div class="message" id="message">Opening calsocial...</div>
       <div class="error-message" id="errorMessage"></div>
 
@@ -194,23 +249,56 @@
         }
       }
 
-      // Fetch the circle name from your API
-      async function fetchAndApplyCircleName() {
+      // Fetch and display circle preview
+      async function fetchAndDisplayCirclePreview() {
         if (!STATE.uid) return;
         try {
-          const url = `https://api.cal.social/circles/uid/${encodeURIComponent(
-            STATE.uid
-          )}/name`;
-          const res = await fetch(url, { headers: { Accept: "text/plain" } });
+          const url = `https://api.cal.social/circles/uid/${encodeURIComponent(STATE.uid)}/preview`;
+          const res = await fetch(url, { headers: { Accept: "application/json" } });
           if (!res.ok) return;
-          const name = (await res.text()).trim();
-          if (name) {
-            document.title = name;
-            // TODO: Display circle info here when ready
-            // document.getElementById("circleName").textContent = name;
+          
+          const circle = await res.json();
+          
+          // Update page title
+          if (circle.name) {
+            document.title = circle.name;
+          }
+          
+          // Display circle preview
+          const previewDiv = document.getElementById("circlePreview");
+          if (previewDiv && circle.name) {
+            previewDiv.style.display = "block";
+            
+            // Circle picture
+            const circlePicture = document.getElementById("circlePicture");
+            const circlePicturePlaceholder = document.getElementById("circlePicturePlaceholder");
+            if (circle.pictureUrl) {
+              circlePicture.src = circle.pictureUrl;
+              circlePicture.style.display = "block";
+              circlePicturePlaceholder.style.display = "none";
+            } else {
+              circlePicture.style.display = "none";
+              circlePicturePlaceholder.style.display = "flex";
+            }
+            
+            // Circle name
+            document.getElementById("circleName").textContent = circle.name;
+            
+            // Member count
+            const memberCount = document.getElementById("circleMemberCount");
+            const count = circle.memberCount || 0;
+            memberCount.textContent = `${count} ${count === 1 ? 'member' : 'members'}`;
+            
+            // Circle description
+            const circleDescription = document.getElementById("circleDescription");
+            if (circle.description) {
+              circleDescription.textContent = circle.description;
+            } else {
+              circleDescription.style.display = "none";
+            }
           }
         } catch (e) {
-          // fallback silently
+          console.error("Error fetching circle preview:", e);
         }
       }
 
@@ -242,8 +330,8 @@
           return;
         }
 
-        // Fetch and apply circle name here
-        fetchAndApplyCircleName();
+        // Fetch and display circle preview
+        fetchAndDisplayCirclePreview();
 
         if (STATE.platform === "ios") {
           handleIOS();

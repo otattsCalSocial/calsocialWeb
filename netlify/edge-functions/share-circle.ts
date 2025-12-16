@@ -149,7 +149,7 @@ export default async (request: Request) => {
         margin: 15px 20px; 
         display: none; 
       }
-      /* Sticky footer button */
+      /* Sticky footer buttons */
       .sticky-footer {
         position: fixed;
         bottom: 0;
@@ -162,26 +162,30 @@ export default async (request: Request) => {
         box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
         z-index: 1000;
       }
+      .button-container {
+        display: flex;
+        gap: 12px;
+        max-width: 600px;
+        margin: 0 auto;
+      }
       .footer-button {
-        width: 100%;
+        flex: 1;
         padding: 16px;
-        background-color: #9B111E;
-        color: #fff;
         border: none;
         border-radius: 8px;
         font-size: 17px;
         font-weight: 600;
         cursor: pointer;
         transition: background-color 0.2s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
       }
-      .footer-button:hover {
+      .footer-button.primary {
+        background-color: #9B111E;
+        color: #fff;
+      }
+      .footer-button.primary:hover {
         background-color: #7d0e18;
       }
-      .footer-button:active {
+      .footer-button.primary:active {
         background-color: #6a0d15;
       }
       .footer-button.secondary {
@@ -191,10 +195,6 @@ export default async (request: Request) => {
       }
       .footer-button.secondary:hover {
         background-color: #e8e8e8;
-      }
-      .footer-button.loading {
-        opacity: 0.7;
-        cursor: not-allowed;
       }
       @media (max-width: 600px) {
         .container {
@@ -216,11 +216,12 @@ export default async (request: Request) => {
       <div class="error-message" id="errorMessage"></div>
     </div>
     
-    <!-- Sticky Footer Button -->
+    <!-- Sticky Footer Buttons -->
     <div class="sticky-footer">
-      <button class="footer-button" id="openAppButton">
-        <span id="buttonText">Open in calsocial</span>
-      </button>
+      <div class="button-container">
+        <button class="footer-button primary" id="openAppButton">Open in calsocial</button>
+        <button class="footer-button secondary" id="downloadButton">Download</button>
+      </div>
     </div>
 
     <script>
@@ -262,129 +263,28 @@ export default async (request: Request) => {
         errorElement.style.display = "block";
       }
 
-      let appInstalled = null; // null = unknown, true = installed, false = not installed
-      let detectionTimeout = null;
-      let hasAttemptedOpen = false;
-
-      function updateButtonForAppStore() {
-        const button = document.getElementById("openAppButton");
-        const buttonText = document.getElementById("buttonText");
-        
-        button.classList.remove("loading");
-        button.classList.add("secondary");
-        buttonText.textContent = STATE.platform === "ios" 
-          ? "Download on App Store" 
-          : STATE.platform === "android"
-          ? "Download on Google Play"
-          : "Download calsocial";
-      }
-
       function openApp() {
-        const button = document.getElementById("openAppButton");
-        
-        if (appInstalled === false) {
-          // App not installed, go to store
-          redirectToStore();
-          return;
-        }
-        
-        if (!hasAttemptedOpen) {
-          // First click - try to open the app immediately
-          hasAttemptedOpen = true;
-          button.classList.add("loading");
-          
-          // Try to open deep link immediately
-          const startTime = Date.now();
-          
-          // Use a hidden iframe trick for better compatibility
-          const iframe = document.createElement("iframe");
-          iframe.style.display = "none";
-          iframe.src = STATE.urls.deepLink;
-          document.body.appendChild(iframe);
-          
-          // Also try direct navigation as fallback
-          setTimeout(() => {
-            window.location.href = STATE.urls.deepLink;
-          }, 100);
-          
-          // Set up detection
-          const visibilityHandler = () => {
-            if (document.hidden) {
-              // App opened successfully
-              appInstalled = true;
-              if (detectionTimeout) {
-                clearTimeout(detectionTimeout);
-              }
-              document.removeEventListener("visibilitychange", visibilityHandler);
-              document.removeEventListener("blur", visibilityHandler);
-              document.removeEventListener("pagehide", visibilityHandler);
-            }
-          };
-          
-          document.addEventListener("visibilitychange", visibilityHandler);
-          document.addEventListener("blur", visibilityHandler);
-          document.addEventListener("pagehide", visibilityHandler);
-          
-          // If page is still visible after 2 seconds, app likely didn't open
-          detectionTimeout = setTimeout(() => {
-            if (appInstalled === null && !document.hidden) {
-              appInstalled = false;
-              updateButtonForAppStore();
-              document.removeEventListener("visibilitychange", visibilityHandler);
-              document.removeEventListener("blur", visibilityHandler);
-              document.removeEventListener("pagehide", visibilityHandler);
-            }
-          }, 2000);
-          
-          // Clean up iframe after a delay
-          setTimeout(() => {
-            if (iframe.parentNode) {
-              iframe.parentNode.removeChild(iframe);
-            }
-          }, 3000);
-          
-        } else if (appInstalled === true) {
-          // App is confirmed installed, open it
-          window.location.href = STATE.urls.deepLink;
-        } else {
-          // Already attempted, app not installed
-          redirectToStore();
-        }
+        window.location.href = STATE.urls.deepLink;
       }
 
-      function redirectToStore() {
+      function downloadApp() {
         if (STATE.platform === "ios") {
           window.location.href = STATE.urls.appStoreURL;
         } else if (STATE.platform === "android") {
           window.location.href = STATE.urls.playStoreURL;
         } else {
-          // Desktop - show both options
-          const choice = confirm("Please open this link on a mobile device.\n\nWould you like to view the App Store page?");
-          if (choice) {
-            window.open(STATE.urls.appStoreURL, "_blank");
-          }
+          // Desktop - show app store link
+          window.open(STATE.urls.appStoreURL, "_blank");
         }
       }
 
 
       function handleIOS() {
         showCirclePreview();
-        // In-app browsers should show download button immediately
-        if (STATE.isInAppBrowser) {
-          appInstalled = false;
-          hasAttemptedOpen = true;
-          updateButtonForAppStore();
-        }
       }
 
       function handleAndroid() {
         showCirclePreview();
-        // In-app browsers should show download button immediately
-        if (STATE.isInAppBrowser) {
-          appInstalled = false;
-          hasAttemptedOpen = true;
-          updateButtonForAppStore();
-        }
       }
 
       // Show circle preview if available
@@ -461,17 +361,17 @@ export default async (request: Request) => {
           showCirclePreview();
         });
 
-        // Set up button click handler
+        // Set up button click handlers
         document.getElementById("openAppButton").addEventListener("click", openApp);
+        document.getElementById("downloadButton").addEventListener("click", downloadApp);
         
         if (STATE.platform === "ios") {
           handleIOS();
         } else if (STATE.platform === "android") {
           handleAndroid();
         } else {
-          // Desktop - show preview and app store button
+          // Desktop
           showCirclePreview();
-          updateButtonForAppStore();
         }
       }
 

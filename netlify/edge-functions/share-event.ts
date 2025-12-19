@@ -8,8 +8,38 @@ export default async (request: Request) => {
   if (!match) return new Response("Not Found", { status: 404 });
 
   const uid = match[1];
-  const title = "calsocial event";
+
+  // Fetch event preview from your public API (AllowAnonymous endpoint)
+  let title = "calsocial event";
+  let description = "Join this event on calsocial!";
+  let imageUrl = "https://cal.social/assets/smallLogo.png";
+  try {
+    const r = await fetch(`https://api.cal.social/events/${encodeURIComponent(uid)}/preview`, {
+      headers: { Accept: "application/json" }
+    });
+    if (r.ok) {
+      const event = await r.json();
+      if (event.title) title = event.title;
+      if (event.description) description = event.description;
+      if (event.imageUrl) imageUrl = event.imageUrl;
+    }
+  } catch {
+    // Fallback to title endpoint
+    try {
+      const r = await fetch(`https://api.cal.social/events/${encodeURIComponent(uid)}/title`, {
+        headers: { Accept: "text/plain" }
+      });
+      if (r.ok) {
+        const t = (await r.text()).trim();
+        if (t) title = t;
+      }
+    } catch {
+      // keep fallback
+    }
+  }
+
   const safeTitle = escapeHtml(title);
+  const safeDescription = escapeHtml(description);
   const safeUid = escapeHtml(uid);
 
   // Return your existing redirect page, but with server-rendered <title> + OG/Twitter tags.
@@ -23,16 +53,16 @@ export default async (request: Request) => {
 
     <!-- Open Graph for social previews -->
     <meta property="og:title" content="${safeTitle}" />
-    <meta property="og:description" content="Join this event on calsocial!" />
-    <meta property="og:image" content="https://cal.social/assets/smallLogo.png" />
+    <meta property="og:description" content="${safeDescription}" />
+    <meta property="og:image" content="${imageUrl}" />
     <meta property="og:url" content="https://cal.social/event/${safeUid}" />
     <meta property="og:type" content="website" />
 
     <!-- Optional: Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${safeTitle}" />
-    <meta name="twitter:description" content="Join this event on calsocial!" />
-    <meta name="twitter:image" content="https://cal.social/assets/smallLogo.png" />
+    <meta name="twitter:description" content="${safeDescription}" />
+    <meta name="twitter:image" content="${imageUrl}" />
 
     <style>
       /* --- your existing CSS unchanged --- */
@@ -158,6 +188,20 @@ export default async (request: Request) => {
         }
       }
 
+      // (Optional) JS title update for users after click; crawlers don't run JS
+      async function fetchAndApplyEventTitle() {
+        if (!STATE.uid) return;
+        try {
+          const url = \`https://api.cal.social/events/\${encodeURIComponent(STATE.uid)}/title\`;
+          const res = await fetch(url, { headers: { Accept: "text/plain" } });
+          if (!res.ok) return;
+          const title = (await res.text()).trim();
+          if (title) {
+            document.title = title;
+          }
+        } catch (e) {}
+      }
+
       function handleAndroid() {
         if (STATE.isInAppBrowser) {
           showAppButtons();
@@ -175,6 +219,8 @@ export default async (request: Request) => {
           showError("Error: Event ID is missing");
           return;
         }
+
+        fetchAndApplyEventTitle();
 
         if (STATE.platform === "ios") {
           handleIOS();

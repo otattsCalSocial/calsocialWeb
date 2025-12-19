@@ -8,8 +8,26 @@ export default async (request: Request) => {
   if (!match) return new Response("Not Found", { status: 404 });
 
   const uid = match[1];
-  const title = "calsocial circle";
+
+  // Fetch circle name from your public API
+  let title = "calsocial circle";
+  const description = "Join this circle on calsocial!";
+  const imageUrl = "https://cal.social/assets/smallLogo.png";
+  
+  try {
+    const r = await fetch(`https://api.cal.social/circles/uid/${encodeURIComponent(uid)}/name`, {
+      headers: { Accept: "text/plain" }
+    });
+    if (r.ok) {
+      const t = (await r.text()).trim();
+      if (t) title = t;
+    }
+  } catch {
+    // keep fallback
+  }
+
   const safeTitle = escapeHtml(title);
+  const safeDescription = escapeHtml(description);
   const safeUid = escapeHtml(uid);
 
   // Return your existing redirect page, but with server-rendered <title> + OG/Twitter tags.
@@ -23,16 +41,16 @@ export default async (request: Request) => {
 
     <!-- Open Graph for social previews -->
     <meta property="og:title" content="${safeTitle}" />
-    <meta property="og:description" content="Join this circle on calsocial!" />
-    <meta property="og:image" content="https://cal.social/assets/smallLogo.png" />
+    <meta property="og:description" content="${safeDescription}" />
+    <meta property="og:image" content="${imageUrl}" />
     <meta property="og:url" content="https://cal.social/circle/${safeUid}" />
     <meta property="og:type" content="website" />
 
     <!-- Optional: Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${safeTitle}" />
-    <meta name="twitter:description" content="Join this circle on calsocial!" />
-    <meta name="twitter:image" content="https://cal.social/assets/smallLogo.png" />
+    <meta name="twitter:description" content="${safeDescription}" />
+    <meta name="twitter:image" content="${imageUrl}" />
 
     <style>
       /* --- your existing CSS unchanged --- */
@@ -158,6 +176,20 @@ export default async (request: Request) => {
         }
       }
 
+      // (Optional) JS title update for users after click; crawlers don't run JS
+      async function fetchAndApplyCircleName() {
+        if (!STATE.uid) return;
+        try {
+          const url = \`https://api.cal.social/circles/uid/\${encodeURIComponent(STATE.uid)}/name\`;
+          const res = await fetch(url, { headers: { Accept: "text/plain" } });
+          if (!res.ok) return;
+          const title = (await res.text()).trim();
+          if (title) {
+            document.title = title;
+          }
+        } catch (e) {}
+      }
+
       function handleAndroid() {
         if (STATE.isInAppBrowser) {
           showAppButtons();
@@ -175,6 +207,8 @@ export default async (request: Request) => {
           showError("Error: Circle ID is missing");
           return;
         }
+
+        fetchAndApplyCircleName();
 
         if (STATE.platform === "ios") {
           handleIOS();

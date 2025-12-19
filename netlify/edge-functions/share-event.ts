@@ -9,33 +9,21 @@ export default async (request: Request) => {
 
   const uid = match[1];
 
-  // Fetch event preview from your public API (AllowAnonymous endpoint)
+  // Fetch event title from your public API
   let title = "calsocial event";
-  let description = "Join this event on calsocial!";
-  let imageUrl = "https://cal.social/assets/smallLogo.png";
+  const description = "Join this event on calsocial!";
+  const imageUrl = "https://cal.social/assets/smallLogo.png";
+  
   try {
-    const r = await fetch(`https://api.cal.social/events/${encodeURIComponent(uid)}/preview`, {
-      headers: { Accept: "application/json" }
+    const r = await fetch(`https://api.cal.social/events/${encodeURIComponent(uid)}/title`, {
+      headers: { Accept: "text/plain" }
     });
     if (r.ok) {
-      const event = await r.json();
-      if (event.title) title = event.title;
-      if (event.description) description = event.description;
-      if (event.imageUrl) imageUrl = event.imageUrl;
+      const t = (await r.text()).trim();
+      if (t) title = t;
     }
   } catch {
-    // Fallback to title endpoint
-    try {
-      const r = await fetch(`https://api.cal.social/events/${encodeURIComponent(uid)}/title`, {
-        headers: { Accept: "text/plain" }
-      });
-      if (r.ok) {
-        const t = (await r.text()).trim();
-        if (t) title = t;
-      }
-    } catch {
-      // keep fallback
-    }
+    // keep fallback
   }
 
   const safeTitle = escapeHtml(title);
